@@ -1,3 +1,6 @@
+pub mod error;
+pub mod types;
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
