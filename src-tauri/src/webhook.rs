@@ -127,7 +127,7 @@ pub fn start_webhook_server(app: AppHandle, port: u16) {
 
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
 
-    tokio::spawn(async move {
+    tauri::async_runtime::spawn(async move {
         let listener = match tokio::net::TcpListener::bind(addr).await {
             Ok(l) => l,
             Err(e) => {
