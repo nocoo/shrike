@@ -1,1 +1,1 @@
-bun run test && bun run lint && bun run test:rs
+bun run test && bun run lint && bun run test:rs && bun run test:e2e:rs

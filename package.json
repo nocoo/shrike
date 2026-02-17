@@ -9,12 +9,15 @@
     "tauri": "tauri",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:rs": "cargo test --manifest-path src-tauri/Cargo.toml --lib",
+    "test:e2e:rs": "cargo test --manifest-path src-tauri/Cargo.toml --tests",
+    "test:e2e": "bun run test:e2e:rs",
+    "test:all": "bun run test && bun run test:rs && bun run test:e2e:rs",
     "lint": "eslint src/ && cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings",
     "lint:ts": "eslint src/",
     "lint:rs": "cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "format:check": "prettier --check 'src/**/*.{ts,tsx}'",
-    "test:rs": "cargo test --manifest-path src-tauri/Cargo.toml",
     "prepare": "husky"
   },
   "dependencies": {
