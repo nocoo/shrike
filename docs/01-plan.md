@@ -96,29 +96,29 @@ shrike/
 ### Phase 0: Scaffolding
 
 - [x] 0.0 Write plan document
-- [ ] 0.1 Scaffold Tauri v2 + Next.js project
-- [ ] 0.2 Configure shadcn/ui and Tailwind
-- [ ] 0.3 Setup testing and linting infra
+- [x] 0.1 Scaffold Tauri v2 + Next.js project
+- [x] 0.2 Configure shadcn/ui and Tailwind
+- [x] 0.3 Setup testing and linting infra
 
 ### Phase 1: Data Layer (Rust Backend)
 
-- [ ] 1.1 Add backup item types and store schema
-- [ ] 1.2 Implement file list management commands
-- [ ] 1.3 Implement path validation
-- [ ] 1.4 Implement rsync command builder
-- [ ] 1.5 Implement sync executor with streaming output
+- [x] 1.1 Add backup item types and store schema
+- [x] 1.2 Implement file list management commands
+- [x] 1.3 Implement path validation
+- [x] 1.4 Implement rsync command builder
+- [x] 1.5 Implement sync executor with streaming output
 
 ### Phase 2: Frontend UI
 
-- [ ] 2.1 Implement drop zone with drag-drop events
-- [ ] 2.2 Implement file list with remove and badge
-- [ ] 2.3 Implement sync button with progress log
-- [ ] 2.4 Implement settings dialog for gdrive path
+- [x] 2.1 Implement drop zone with drag-drop events
+- [x] 2.2 Implement file list with remove and badge
+- [x] 2.3 Implement sync button with progress log
+- [x] 2.4 Implement settings dialog for gdrive path
 
 ### Phase 3: Webhook
 
-- [ ] 3.1 Add Axum webhook server on localhost:18888
-- [ ] 3.2 Add webhook auth with bearer token
+- [x] 3.1 Add Axum webhook server on localhost:18888
+- [x] 3.2 Add webhook auth with bearer token
 
 ### Phase 4: Polish
 
