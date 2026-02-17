@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+.bun/
+
+# Next.js
+.next/
+out/
+
+# Rust / Tauri
+target/
+src-tauri/gen/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Testing
+coverage/
+
+# Temp files
+*.tmp
+*.swp

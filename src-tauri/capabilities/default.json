@@ -1,0 +1,38 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "store:default",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "rsync",
+          "cmd": "rsync",
+          "args": true,
+          "sidecar": false
+        },
+        {
+          "name": "mkdir",
+          "cmd": "mkdir",
+          "args": true,
+          "sidecar": false
+        }
+      ]
+    },
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "rsync",
+          "cmd": "rsync",
+          "args": true,
+          "sidecar": false
+        }
+      ]
+    }
+  ]
+}
