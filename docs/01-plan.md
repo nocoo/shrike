@@ -49,8 +49,13 @@ shrike/
 │   ├── src/
 │   │   ├── lib.rs
 │   │   ├── commands.rs
-│   │   ├── sync.rs
+│   │   ├── sync/
+│   │   │   ├── mod.rs           # Pipeline orchestration
+│   │   │   ├── filelist.rs      # Layer 1: filelist generation
+│   │   │   ├── validation.rs    # Layer 2: path validation
+│   │   │   └── executor.rs      # Layer 3: rsync execution
 │   │   ├── webhook.rs
+│   │   ├── types.rs
 │   │   └── error.rs
 │   ├── Cargo.toml
 │   ├── tauri.conf.json
@@ -123,8 +128,8 @@ shrike/
 
 ### Phase 4: Polish
 
-- [ ] 4.1 Add E2E tests for full sync workflow
-- [ ] 4.2 Add README with usage instructions
+- [x] 4.1 Add E2E tests for full sync workflow
+- [x] 4.2 Add README with usage instructions
 
 ## Key Technical Decisions
 
