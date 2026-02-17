@@ -36,7 +36,8 @@ shrike/
 │   │   ├── drop-zone.tsx
 │   │   ├── sync-button.tsx
 │   │   ├── sync-log.tsx
-│   │   └── settings-dialog.tsx
+│   │   ├── settings-dialog.tsx
+│   │   └── toolbar.tsx
 │   ├── lib/
 │   │   ├── store.ts
 │   │   ├── commands.ts
