@@ -1,5 +1,6 @@
 pub mod commands;
 pub mod error;
+pub mod sync;
 pub mod types;
 
 pub fn run() {
@@ -12,6 +13,7 @@ pub fn run() {
             commands::list_entries,
             commands::get_settings,
             commands::update_settings,
+            commands::trigger_sync,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

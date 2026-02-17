@@ -7,7 +7,8 @@ use tauri_plugin_store::StoreExt;
 use uuid::Uuid;
 
 use crate::error::{Result, ShrikeError};
-use crate::types::{AppSettings, BackupEntry, ItemType};
+use crate::sync;
+use crate::types::{AppSettings, BackupEntry, ItemType, SyncResult};
 
 const STORE_FILE: &str = "shrike_data.json";
 const ITEMS_KEY: &str = "items";
@@ -144,6 +145,15 @@ pub fn update_settings(app: AppHandle, settings: AppSettings) -> Result<()> {
     store.set(SETTINGS_KEY.to_string(), json!(settings));
 
     Ok(())
+}
+
+/// Trigger a sync of all backup entries via rsync.
+#[tauri::command]
+pub fn trigger_sync(app: AppHandle) -> Result<SyncResult> {
+    let entries = load_items(&app)?;
+    let settings = get_settings(app)?;
+    let result = sync::execute_sync(&entries, &settings)?;
+    Ok(result)
 }
 
 #[cfg(test)]
