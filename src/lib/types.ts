@@ -1,0 +1,32 @@
+/**
+ * TypeScript types mirroring the Rust backend types.
+ * These must stay in sync with src-tauri/src/types.rs.
+ */
+
+export type ItemType = "file" | "directory";
+
+export interface BackupEntry {
+  id: string;
+  path: string;
+  item_type: ItemType;
+  added_at: string;
+  last_synced: string | null;
+}
+
+export interface AppSettings {
+  gdrive_path: string;
+  backup_dir_name: string;
+  webhook_port: number;
+  webhook_token: string;
+}
+
+export interface SyncResult {
+  files_transferred: number;
+  bytes_transferred: number;
+  stdout: string;
+  stderr: string;
+  exit_code: number;
+  synced_at: string;
+}
+
+export type SyncStatus = "idle" | "running";
