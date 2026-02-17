@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Plus, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SettingsDialog } from "@/components/settings-dialog";
@@ -13,6 +14,13 @@ export function Toolbar({ entryCount, onAdd }: ToolbarProps) {
   return (
     <div className="flex items-center justify-between border-b px-4 py-3">
       <div className="flex items-center gap-2">
+        <Image
+          src="/logo-64.png"
+          alt="Shrike"
+          width={24}
+          height={24}
+          className="rounded"
+        />
         <h1 className="text-sm font-semibold">Shrike</h1>
         {entryCount > 0 && (
           <span className="text-xs text-muted-foreground">
