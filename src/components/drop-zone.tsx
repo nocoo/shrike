@@ -8,23 +8,36 @@ interface DropZoneProps {
 }
 
 export function DropZone({ isDragging, hasEntries }: DropZoneProps) {
-  if (!isDragging && hasEntries) return null;
+  // Full-window overlay when dragging
+  if (isDragging) {
+    return (
+      <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+        <div className="rounded-lg border-2 border-dashed border-primary px-12 py-8">
+          <p className="text-sm font-medium text-primary">
+            Drop to add to backup list
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-  return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors",
-        isDragging
-          ? "border-primary bg-primary/5"
-          : "border-muted-foreground/25 bg-muted/50",
-        hasEntries ? "py-4" : "py-16"
-      )}
-    >
-      <p className="text-sm text-muted-foreground">
-        {isDragging
-          ? "Drop files here to add them"
-          : "Drag and drop files or folders here to start backing up"}
-      </p>
-    </div>
-  );
+  // Empty state hint (only when no entries)
+  if (!hasEntries) {
+    return (
+      <div
+        className={cn(
+          "flex flex-1 flex-col items-center justify-center gap-2 px-8"
+        )}
+      >
+        <p className="text-sm text-muted-foreground">
+          Drag files or folders here
+        </p>
+        <p className="text-xs text-muted-foreground/60">
+          or click + to browse
+        </p>
+      </div>
+    );
+  }
+
+  return null;
 }

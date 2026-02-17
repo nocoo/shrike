@@ -14,22 +14,25 @@ export function SyncButton({ status, disabled, onSync }: SyncButtonProps) {
   const isRunning = status === "running";
 
   return (
-    <Button
-      onClick={onSync}
-      disabled={disabled || isRunning}
-      className="w-full"
-    >
-      {isRunning ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Syncing...
-        </>
-      ) : (
-        <>
-          <Play className="mr-2 h-4 w-4" />
-          Sync Now
-        </>
-      )}
-    </Button>
+    <div className="border-t px-4 py-3">
+      <Button
+        onClick={onSync}
+        disabled={disabled || isRunning}
+        size="sm"
+        className="w-full"
+      >
+        {isRunning ? (
+          <>
+            <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+            Syncing...
+          </>
+        ) : (
+          <>
+            <Play className="mr-2 h-3.5 w-3.5" />
+            Sync Now
+          </>
+        )}
+      </Button>
+    </div>
   );
 }

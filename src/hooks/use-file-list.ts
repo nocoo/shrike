@@ -2,11 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { listen, TauriEvent } from "@tauri-apps/api/event";
-import {
-  addEntry,
-  listEntries,
-  removeEntry,
-} from "@/lib/commands";
+import { open } from "@tauri-apps/plugin-dialog";
+import { addEntry, listEntries, removeEntry } from "@/lib/commands";
 import type { BackupEntry } from "@/lib/types";
 
 interface DragDropPayload {
@@ -29,9 +26,8 @@ export function useFileList() {
 
   // Listen for Tauri drag-drop events
   useEffect(() => {
-    const unlistenEnter = listen<DragDropPayload>(
-      TauriEvent.DRAG_ENTER,
-      () => setIsDragging(true)
+    const unlistenEnter = listen<DragDropPayload>(TauriEvent.DRAG_ENTER, () =>
+      setIsDragging(true)
     );
     const unlistenLeave = listen(TauriEvent.DRAG_LEAVE, () =>
       setIsDragging(false)
@@ -58,10 +54,25 @@ export function useFileList() {
     };
   }, []);
 
-  const add = useCallback(async (path: string) => {
-    const entry = await addEntry(path);
-    setEntries((prev) => [...prev, entry]);
-    return entry;
+  // Open native file picker to add files/folders
+  const addViaDialog = useCallback(async () => {
+    const selected = await open({
+      multiple: true,
+      directory: false,
+      title: "Select files or folders to back up",
+    });
+
+    if (!selected) return;
+
+    const paths = Array.isArray(selected) ? selected : [selected];
+    for (const path of paths) {
+      try {
+        const entry = await addEntry(path);
+        setEntries((prev) => [...prev, entry]);
+      } catch (err) {
+        console.error(`Failed to add ${path}:`, err);
+      }
+    }
   }, []);
 
   const remove = useCallback(async (id: string) => {
@@ -78,7 +89,7 @@ export function useFileList() {
     entries,
     loading,
     isDragging,
-    add,
+    addViaDialog,
     remove,
     refresh,
   };

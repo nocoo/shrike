@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Settings } from "lucide-react";
+import { useState, useEffect, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,7 +14,11 @@ import { Label } from "@/components/ui/label";
 import { getSettings, updateSettings } from "@/lib/commands";
 import type { AppSettings } from "@/lib/types";
 
-export function SettingsDialog() {
+interface SettingsDialogProps {
+  children: ReactNode;
+}
+
+export function SettingsDialog({ children }: SettingsDialogProps) {
   const [open, setOpen] = useState(false);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [saving, setSaving] = useState(false);
@@ -41,11 +44,7 @@ export function SettingsDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Settings className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
