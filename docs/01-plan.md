@@ -81,7 +81,7 @@ shrike/
     }
   ],
   "settings": {
-    "gdrive_path": "/Users/nocoo/Library/CloudStorage/GoogleDrive-user@example.com/\u6211\u7684\u4e91\u7aef\u786c\u76df",
+    "gdrive_path": "/Users/nocoo/Library/CloudStorage/(auto-detected)",
     "backup_dir_name": "ShrikeBackup",
     "webhook_port": 7022,
     "webhook_token": "generated-uuid-token"
@@ -148,7 +148,7 @@ rsync -avR --files-from=/tmp/shrike_backup_list.txt / "$GDRIVE_PATH/ShrikeBackup
 ### Google Drive Mount Path
 
 ```
-/Users/nocoo/Library/CloudStorage/GoogleDrive-user@example.com/\u6211\u7684\u4e91\u7aef\u786c\u76df/ShrikeBackup/
+~/Library/CloudStorage/GoogleDrive-<email>/<My Drive>/ShrikeBackup/
 ```
 
 ### Webhook API

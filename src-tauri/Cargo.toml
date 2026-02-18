@@ -21,6 +21,7 @@ axum = "0.8"
 thiserror = "2"
 tempfile = "3"
 tauri-plugin-dialog = "2.6.0"
+dirs = "6.0.0"
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]
