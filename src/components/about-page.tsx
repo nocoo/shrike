@@ -36,7 +36,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
       {/* About content — centered */}
       <div className="flex flex-1 flex-col items-center justify-center gap-4">
         <Image
-          src="/logo-128.png"
+          src="/logo-512.png"
           alt="Shrike"
           width={80}
           height={80}

@@ -23,7 +23,7 @@ describe("AboutPage", () => {
     render(<AboutPage onBack={() => {}} />);
     const logo = screen.getByAltText("Shrike");
     expect(logo).toBeInTheDocument();
-    expect(logo).toHaveAttribute("src", "/logo-128.png");
+    expect(logo).toHaveAttribute("src", "/logo-512.png");
   });
 
   it("renders app name and version", () => {
