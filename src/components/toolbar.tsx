@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Plus, Settings, Wand2 } from "lucide-react";
+import { Info, Plus, Settings, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ToolbarProps {
@@ -9,9 +9,10 @@ interface ToolbarProps {
   onAdd: () => void;
   onWizard: () => void;
   onSettings: () => void;
+  onAbout: () => void;
 }
 
-export function Toolbar({ entryCount, onAdd, onWizard, onSettings }: ToolbarProps) {
+export function Toolbar({ entryCount, onAdd, onWizard, onSettings, onAbout }: ToolbarProps) {
   return (
     <header
       data-tauri-drag-region
@@ -48,6 +49,9 @@ export function Toolbar({ entryCount, onAdd, onWizard, onSettings }: ToolbarProp
           </Button>
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onSettings}>
             <Settings className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onAbout}>
+            <Info className="h-4 w-4" />
           </Button>
         </div>
       </div>

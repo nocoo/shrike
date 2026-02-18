@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
-import { ArrowLeft, Copy, Check, ExternalLink } from "lucide-react";
+import { ArrowLeft, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -227,37 +226,6 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                   </Button>
                 </div>
               </div>
-            </section>
-
-            {/* About section */}
-            <section className="space-y-3">
-              <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                About
-              </h2>
-
-              <div className="flex items-center gap-3 rounded-md border p-3">
-                <Image
-                  src="/logo-64.png"
-                  alt="Shrike"
-                  width={32}
-                  height={32}
-                  className="rounded"
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium">Shrike</p>
-                  <p className="text-[11px] text-muted-foreground">v0.1.0</p>
-                </div>
-              </div>
-
-              <a
-                href="https://github.com/nocoo/shrike"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                github.com/nocoo/shrike
-              </a>
             </section>
           </div>
         )}

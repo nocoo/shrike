@@ -19,6 +19,7 @@ describe("Toolbar", () => {
     onAdd: () => {},
     onWizard: () => {},
     onSettings: () => {},
+    onAbout: () => {},
   };
 
   it("renders app title", () => {
@@ -63,7 +64,7 @@ describe("Toolbar", () => {
     render(<Toolbar {...defaultProps} onWizard={onWizard} />);
 
     const buttons = screen.getAllByRole("button");
-    // Wizard button is the second button (Plus=0, Wand2=1, Settings=2)
+    // Wizard button is the second button (Plus=0, Wand2=1, Settings=2, Info=3)
     fireEvent.click(buttons[1]);
 
     expect(onWizard).toHaveBeenCalledOnce();
@@ -74,10 +75,21 @@ describe("Toolbar", () => {
     render(<Toolbar {...defaultProps} onSettings={onSettings} />);
 
     const buttons = screen.getAllByRole("button");
-    // Settings button is the third button (Plus=0, Wand2=1, Settings=2)
+    // Settings button is the third button (Plus=0, Wand2=1, Settings=2, Info=3)
     fireEvent.click(buttons[2]);
 
     expect(onSettings).toHaveBeenCalledOnce();
+  });
+
+  it("calls onAbout when info button is clicked", () => {
+    const onAbout = vi.fn();
+    render(<Toolbar {...defaultProps} onAbout={onAbout} />);
+
+    const buttons = screen.getAllByRole("button");
+    // Info button is the fourth button (Plus=0, Wand2=1, Settings=2, Info=3)
+    fireEvent.click(buttons[3]);
+
+    expect(onAbout).toHaveBeenCalledOnce();
   });
 
   it("has data-tauri-drag-region for window dragging", () => {

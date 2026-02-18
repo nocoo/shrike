@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AboutPage } from "@/components/about-page";
 import { DropZone } from "@/components/drop-zone";
 import { FileList } from "@/components/file-list";
 import { SettingsPage } from "@/components/settings-page";
@@ -11,7 +12,7 @@ import { WizardPage } from "@/components/wizard-page";
 import { useFileList } from "@/hooks/use-file-list";
 import { useSync } from "@/hooks/use-sync";
 
-type Page = "home" | "settings" | "wizard";
+type Page = "home" | "settings" | "wizard" | "about";
 
 export default function Home() {
   const [page, setPage] = useState<Page>("home");
@@ -30,6 +31,10 @@ export default function Home() {
 
   if (page === "settings") {
     return <SettingsPage onBack={() => setPage("home")} />;
+  }
+
+  if (page === "about") {
+    return <AboutPage onBack={() => setPage("home")} />;
   }
 
   if (page === "wizard") {
@@ -62,6 +67,7 @@ export default function Home() {
         onAdd={addViaDialog}
         onWizard={() => setPage("wizard")}
         onSettings={() => setPage("settings")}
+        onAbout={() => setPage("about")}
       />
 
       <div className="flex flex-1 flex-col overflow-hidden">

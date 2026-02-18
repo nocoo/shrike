@@ -1,16 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-// Mock next/image to avoid SSG image optimization issues in test
-vi.mock("next/image", () => ({
-  default: (props: Record<string, unknown>) => {
-    const { fill, priority, ...rest } = props;
-    void fill;
-    void priority;
-    return <img {...rest} />;
-  },
-}));
-
 // Mock Tauri commands
 const mockGetSettings = vi.fn();
 const mockUpdateSettings = vi.fn();
@@ -91,7 +81,6 @@ describe("SettingsPage", () => {
       expect(screen.getByText("General")).toBeInTheDocument();
       expect(screen.getByText("Sync")).toBeInTheDocument();
       expect(screen.getByText("Webhook")).toBeInTheDocument();
-      expect(screen.getByText("About")).toBeInTheDocument();
     });
   });
 
@@ -167,30 +156,6 @@ describe("SettingsPage", () => {
 
     await waitFor(() => {
       expect(mockSetDockVisible).toHaveBeenCalledWith(false);
-    });
-  });
-
-  it("renders About section with logo, version, and GitHub link", async () => {
-    render(<SettingsPage onBack={() => {}} />);
-
-    await waitFor(() => {
-      // App name and version
-      expect(screen.getByText("Shrike")).toBeInTheDocument();
-      expect(screen.getByText("v0.1.0")).toBeInTheDocument();
-
-      // Logo image
-      const logo = screen.getByAltText("Shrike");
-      expect(logo).toBeInTheDocument();
-      expect(logo).toHaveAttribute("src", "/logo-64.png");
-
-      // GitHub link
-      const link = screen.getByText("github.com/nocoo/shrike");
-      expect(link).toBeInTheDocument();
-      expect(link.closest("a")).toHaveAttribute(
-        "href",
-        "https://github.com/nocoo/shrike"
-      );
-      expect(link.closest("a")).toHaveAttribute("target", "_blank");
     });
   });
 
