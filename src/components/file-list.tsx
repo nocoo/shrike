@@ -93,32 +93,13 @@ export function groupEntries(entries: BackupEntry[]): EntryGroup[] {
   }));
 }
 
-/**
- * Get display path for an entry — strip home prefix to show relative path.
- * Example: "/Users/nocoo/workspace/personal/abc" → "~/workspace/personal"
- */
-export function displayDir(dir: string, homePrefix: string | null): string {
-  if (homePrefix && dir.startsWith(homePrefix)) {
-    const relative = dir.slice(homePrefix.length);
-    return "~" + (relative || "");
-  }
-  return dir;
-}
-
 export function FileList({ entries, onRemove }: FileListProps) {
   if (entries.length === 0) return null;
 
   const groups = groupEntries(entries);
 
-  // Detect home prefix for display
-  let homePrefix: string | null = null;
-  for (const entry of entries) {
-    homePrefix = detectHomePrefix(entry.path);
-    if (homePrefix) break;
-  }
-
   return (
-    <ScrollArea className="flex-1">
+    <ScrollArea className="h-full">
       <div className="divide-y divide-border">
         {groups.map((group) => (
           <div key={group.key}>
@@ -156,7 +137,7 @@ export function FileList({ entries, onRemove }: FileListProps) {
                       </Badge>
                     </div>
                     <p className="truncate text-[11px] text-muted-foreground">
-                      {displayDir(dir, homePrefix)}
+                      {dir}
                     </p>
                   </div>
 

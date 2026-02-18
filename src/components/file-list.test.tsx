@@ -5,7 +5,6 @@ import {
   formatPath,
   detectHomePrefix,
   groupEntries,
-  displayDir,
 } from "./file-list";
 import type { BackupEntry } from "@/lib/types";
 
@@ -48,28 +47,6 @@ describe("detectHomePrefix", () => {
     expect(detectHomePrefix("/Users/alice/Documents/file.txt")).toBe(
       "/Users/alice"
     );
-  });
-});
-
-describe("displayDir", () => {
-  it("replaces home prefix with ~", () => {
-    expect(displayDir("/Users/nocoo/workspace/personal", "/Users/nocoo")).toBe(
-      "~/workspace/personal"
-    );
-  });
-
-  it("returns original dir for non-home paths", () => {
-    expect(displayDir("/etc/config", "/Users/nocoo")).toBe("/etc/config");
-  });
-
-  it("handles null home prefix", () => {
-    expect(displayDir("/Users/nocoo/Documents", null)).toBe(
-      "/Users/nocoo/Documents"
-    );
-  });
-
-  it("handles home dir itself", () => {
-    expect(displayDir("/Users/nocoo", "/Users/nocoo")).toBe("~");
   });
 });
 
@@ -222,10 +199,10 @@ describe("FileList", () => {
     expect(screen.getByText("my-project")).toBeInTheDocument();
   });
 
-  it("renders parent directory paths with ~ prefix", () => {
+  it("renders parent directory paths as full paths", () => {
     render(<FileList entries={mockEntries} onRemove={() => {}} />);
-    expect(screen.getByText("~/Documents")).toBeInTheDocument();
-    expect(screen.getByText("~/workspace")).toBeInTheDocument();
+    expect(screen.getByText("/Users/nocoo/Documents")).toBeInTheDocument();
+    expect(screen.getByText("/Users/nocoo/workspace")).toBeInTheDocument();
   });
 
   it("renders item type badges", () => {
@@ -290,12 +267,12 @@ describe("FileList", () => {
       },
     ];
     render(<FileList entries={singleGroupEntries} onRemove={() => {}} />);
-    // "workspace" should not appear as a header — it's only the group key
-    // The entries themselves show "project-a" and "project-b"
     expect(screen.getByText("project-a")).toBeInTheDocument();
     expect(screen.getByText("project-b")).toBeInTheDocument();
-    // No header rendered for single group
-    expect(screen.queryByText("workspace")).not.toBeInTheDocument();
+    // No sticky group header rendered for single group
+    // The text "workspace" only appears inside the full path, not as a standalone header
+    const headers = document.querySelectorAll(".sticky");
+    expect(headers).toHaveLength(0);
   });
 
   it("shows Other for non-home paths in group headers", () => {
