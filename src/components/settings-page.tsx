@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { ArrowLeft, Copy, Check } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Copy, Check, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ import {
   updateSettings,
   setAutostart,
   setTrayVisible,
+  setDockVisible,
 } from "@/lib/commands";
 import type { AppSettings } from "@/lib/types";
 
@@ -66,6 +68,15 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
     }
   };
 
+  const handleDockVisible = async (visible: boolean) => {
+    try {
+      await setDockVisible(visible);
+      setSettings((s) => (s ? { ...s, show_dock_icon: visible } : s));
+    } catch (err) {
+      console.error("Failed to set dock visibility:", err);
+    }
+  };
+
   return (
     <div className="flex h-screen flex-col pt-[74px]" onContextMenu={(e) => e.preventDefault()}>
       {/* Settings header with back button */}
@@ -86,7 +97,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-sm font-semibold">Settings</h1>
+          <h1 className="text-base font-semibold">Settings</h1>
         </div>
       </header>
 
@@ -96,14 +107,14 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           <div className="space-y-5">
             {/* General section */}
             <section className="space-y-3">
-              <h2 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 General
               </h2>
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Launch at Login</Label>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[11px] text-muted-foreground">
                     Start Shrike when you log in
                   </p>
                 </div>
@@ -117,7 +128,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Show in Menu Bar</Label>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[11px] text-muted-foreground">
                     Display tray icon in the menu bar
                   </p>
                 </div>
@@ -127,11 +138,25 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                   size="sm"
                 />
               </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Show in Dock</Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Display app icon in the macOS Dock
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.show_dock_icon}
+                  onCheckedChange={handleDockVisible}
+                  size="sm"
+                />
+              </div>
             </section>
 
             {/* Sync section */}
             <section className="space-y-3">
-              <h2 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Sync
               </h2>
 
@@ -144,7 +169,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                     setSettings({ ...settings, gdrive_path: e.target.value })
                   }
                 />
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[11px] text-muted-foreground">
                   Path to your Google Drive mount directory
                 </p>
               </div>
@@ -166,7 +191,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
 
             {/* Webhook section */}
             <section className="space-y-3">
-              <h2 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Webhook
               </h2>
 
@@ -202,6 +227,37 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                   </Button>
                 </div>
               </div>
+            </section>
+
+            {/* About section */}
+            <section className="space-y-3">
+              <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                About
+              </h2>
+
+              <div className="flex items-center gap-3 rounded-md border p-3">
+                <Image
+                  src="/logo-64.png"
+                  alt="Shrike"
+                  width={32}
+                  height={32}
+                  className="rounded"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">Shrike</p>
+                  <p className="text-[11px] text-muted-foreground">v0.1.0</p>
+                </div>
+              </div>
+
+              <a
+                href="https://github.com/nocoo/shrike"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                github.com/nocoo/shrike
+              </a>
             </section>
           </div>
         )}

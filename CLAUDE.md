@@ -34,7 +34,7 @@ Rules: imperative mood, lowercase, max 50 chars, no period
 
 ### Test commands
 ```bash
-bun run test          # vitest (frontend, 70 tests)
+bun run test          # vitest (frontend, 73 tests)
 bun run test:rs       # cargo test --lib (rust UT, 101 tests)
 bun run test:e2e:rs   # cargo test --tests (rust E2E, 12 tests)
 bun run test:all      # all of the above
@@ -48,8 +48,8 @@ bun run lint          # eslint + clippy
 ### Test distribution
 - Rust UT: 101 (types 12, error 4, commands 5, sync/filelist 13, sync/validation 23, sync/executor 16, sync/mod 4, webhook 4, sync status 5, gdrive detect 8, scan configs 7)
 - Rust E2E: 12 (sync_e2e 7, webhook_e2e 5)
-- TS: 70 (utils 4, types 3, components 63)
-- **Total: 183**
+- TS: 73 (utils 4, types 3, components 66)
+- **Total: 186**
 
 ### Coverage target
 - Core sync logic: 95%+
@@ -88,3 +88,5 @@ sync/mod.rs         → Orchestrate: generate → validate → execute
 3. **Next.js 16 Server Components cannot have event handlers** — Attempted to add `onContextMenu` handler in `layout.tsx` (a Server Component), which caused a build error. Event handlers must go on Client Components (`"use client"`). Moved the handler to `page.tsx` instead.
 
 4. **Always verify TS test count after adding component tests** — The test count in CLAUDE.md said 31 TS tests but the actual count was 33 after toolbar drag-region tests were added. Keep the count accurate to avoid confusion.
+
+5. **Testing Library query is `getByAltText`, not `getByAlt`** — The correct RTL query for finding elements by `alt` attribute is `screen.getByAltText("...")`. `getByAlt` does not exist and throws a TypeError at runtime.

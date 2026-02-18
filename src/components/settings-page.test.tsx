@@ -1,17 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
+// Mock next/image to avoid SSG image optimization issues in test
+vi.mock("next/image", () => ({
+  default: (props: Record<string, unknown>) => {
+    const { fill, priority, ...rest } = props;
+    void fill;
+    void priority;
+    return <img {...rest} />;
+  },
+}));
+
 // Mock Tauri commands
 const mockGetSettings = vi.fn();
 const mockUpdateSettings = vi.fn();
 const mockSetAutostart = vi.fn();
 const mockSetTrayVisible = vi.fn();
+const mockSetDockVisible = vi.fn();
 
 vi.mock("@/lib/commands", () => ({
   getSettings: (...args: unknown[]) => mockGetSettings(...args),
   updateSettings: (...args: unknown[]) => mockUpdateSettings(...args),
   setAutostart: (...args: unknown[]) => mockSetAutostart(...args),
   setTrayVisible: (...args: unknown[]) => mockSetTrayVisible(...args),
+  setDockVisible: (...args: unknown[]) => mockSetDockVisible(...args),
 }));
 
 import { SettingsPage } from "./settings-page";
@@ -22,6 +34,7 @@ const defaultSettings = {
   webhook_port: 7022,
   webhook_token: "test-token",
   show_tray_icon: true,
+  show_dock_icon: true,
   autostart: false,
 };
 
@@ -32,6 +45,7 @@ describe("SettingsPage", () => {
     mockUpdateSettings.mockResolvedValue(undefined);
     mockSetAutostart.mockResolvedValue(undefined);
     mockSetTrayVisible.mockResolvedValue(undefined);
+    mockSetDockVisible.mockResolvedValue(undefined);
   });
 
   it("renders settings title", async () => {
@@ -77,6 +91,7 @@ describe("SettingsPage", () => {
       expect(screen.getByText("General")).toBeInTheDocument();
       expect(screen.getByText("Sync")).toBeInTheDocument();
       expect(screen.getByText("Webhook")).toBeInTheDocument();
+      expect(screen.getByText("About")).toBeInTheDocument();
     });
   });
 
@@ -125,6 +140,57 @@ describe("SettingsPage", () => {
 
     await waitFor(() => {
       expect(mockSetTrayVisible).toHaveBeenCalledWith(false);
+    });
+  });
+
+  it("renders dock icon toggle", async () => {
+    render(<SettingsPage onBack={() => {}} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Show in Dock")).toBeInTheDocument();
+      expect(
+        screen.getByText("Display app icon in the macOS Dock")
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("calls setDockVisible when dock toggle is clicked", async () => {
+    render(<SettingsPage onBack={() => {}} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Show in Dock")).toBeInTheDocument();
+    });
+
+    // Find the dock switch (third switch)
+    const switches = screen.getAllByRole("switch");
+    fireEvent.click(switches[2]);
+
+    await waitFor(() => {
+      expect(mockSetDockVisible).toHaveBeenCalledWith(false);
+    });
+  });
+
+  it("renders About section with logo, version, and GitHub link", async () => {
+    render(<SettingsPage onBack={() => {}} />);
+
+    await waitFor(() => {
+      // App name and version
+      expect(screen.getByText("Shrike")).toBeInTheDocument();
+      expect(screen.getByText("v0.1.0")).toBeInTheDocument();
+
+      // Logo image
+      const logo = screen.getByAltText("Shrike");
+      expect(logo).toBeInTheDocument();
+      expect(logo).toHaveAttribute("src", "/logo-64.png");
+
+      // GitHub link
+      const link = screen.getByText("github.com/nocoo/shrike");
+      expect(link).toBeInTheDocument();
+      expect(link.closest("a")).toHaveAttribute(
+        "href",
+        "https://github.com/nocoo/shrike"
+      );
+      expect(link.closest("a")).toHaveAttribute("target", "_blank");
     });
   });
 
