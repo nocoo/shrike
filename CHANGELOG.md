@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.2] - 2026-02-18
+
+### Added
+- Dark theme support with system preference auto-detection (auto/light/dark)
+- i18n support with Chinese and English UI (auto/zh/en)
+- Appearance section in Settings with theme and language selectors
+- Lightweight i18n system: translation dicts + React Context + useLocale hook
+- next-themes integration for theme switching with class-based dark mode
+
+### Changed
+- All hardcoded UI strings replaced with i18n translation keys
+- About page version now reads dynamically from Tauri API
+
+### Testing
+- 268 automated tests (109 Rust UT + 12 Rust E2E + 147 TypeScript)
+- renderWithLocale test helper for i18n-aware component testing
+
 ## [0.1.1] - 2026-02-18
 
 ### Added
