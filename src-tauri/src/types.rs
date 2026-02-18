@@ -46,7 +46,7 @@ impl Default for AppSettings {
     fn default() -> Self {
         Self {
             gdrive_path: String::from(
-                "/Users/nocoo/Library/CloudStorage/GoogleDrive-user@example.com/我的云端硬盘",
+                "/Users/nocoo/Library/CloudStorage/GoogleDrive-user@example.com/My Drive",
             ),
             backup_dir_name: String::from("ShrikeBackup"),
             webhook_port: 7022,
