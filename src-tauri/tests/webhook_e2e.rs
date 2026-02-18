@@ -44,6 +44,8 @@ fn webhook_sync_flow_success() {
         show_tray_icon: true,
         show_dock_icon: true,
         autostart: false,
+        theme: "auto".to_string(),
+        language: "auto".to_string(),
     };
 
     let entries = vec![BackupEntry::new(canonical.clone(), ItemType::File)];
@@ -72,6 +74,8 @@ fn webhook_sync_flow_empty_entries_error() {
         show_tray_icon: true,
         show_dock_icon: true,
         autostart: false,
+        theme: "auto".to_string(),
+        language: "auto".to_string(),
     };
 
     let result = simulate_webhook_sync(&[], &settings);

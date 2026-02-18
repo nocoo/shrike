@@ -36,6 +36,8 @@ fn test_settings(dest: &str) -> AppSettings {
         show_tray_icon: true,
         show_dock_icon: true,
         autostart: false,
+        theme: "auto".to_string(),
+        language: "auto".to_string(),
     }
 }
 

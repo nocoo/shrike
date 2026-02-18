@@ -25,6 +25,8 @@ describe("types", () => {
       show_tray_icon: true,
       show_dock_icon: true,
       autostart: false,
+      theme: "auto",
+      language: "auto",
     };
     expect(settings.webhook_port).toBe(7022);
     expect(settings.backup_dir_name).toBe("ShrikeBackup");
@@ -32,6 +34,8 @@ describe("types", () => {
     expect(settings.show_tray_icon).toBe(true);
     expect(settings.show_dock_icon).toBe(true);
     expect(settings.autostart).toBe(false);
+    expect(settings.theme).toBe("auto");
+    expect(settings.language).toBe("auto");
   });
 
   it("SyncResult shape matches expected structure", () => {

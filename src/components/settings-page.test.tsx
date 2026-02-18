@@ -27,6 +27,8 @@ const defaultSettings = {
   show_tray_icon: true,
   show_dock_icon: true,
   autostart: false,
+  theme: "auto",
+  language: "auto",
 };
 
 describe("SettingsPage", () => {

@@ -100,6 +100,14 @@ pub struct AppSettings {
     pub show_dock_icon: bool,
     #[serde(default)]
     pub autostart: bool,
+    #[serde(default = "default_auto")]
+    pub theme: String,
+    #[serde(default = "default_auto")]
+    pub language: String,
+}
+
+fn default_auto() -> String {
+    "auto".to_string()
 }
 
 fn default_true() -> bool {
@@ -130,6 +138,8 @@ impl Default for AppSettings {
             show_tray_icon: true,
             show_dock_icon: true,
             autostart: false,
+            theme: "auto".to_string(),
+            language: "auto".to_string(),
         }
     }
 }
@@ -416,6 +426,8 @@ mod tests {
         assert!(settings.show_tray_icon);
         assert!(settings.show_dock_icon);
         assert!(!settings.autostart);
+        assert_eq!(settings.theme, "auto");
+        assert_eq!(settings.language, "auto");
     }
 
     #[test]
@@ -429,6 +441,8 @@ mod tests {
             show_tray_icon: true,
             show_dock_icon: true,
             autostart: false,
+            theme: "auto".into(),
+            language: "auto".into(),
         };
         assert_eq!(settings.destination_path(), "/mnt/gdrive/Backup/TestMac");
     }
@@ -589,6 +603,8 @@ mod tests {
         assert!(settings.show_tray_icon); // default_true
         assert!(settings.show_dock_icon); // default_true
         assert!(!settings.autostart); // default false
+        assert_eq!(settings.theme, "auto"); // default_auto
+        assert_eq!(settings.language, "auto"); // default_auto
     }
 
     #[test]
@@ -602,6 +618,8 @@ mod tests {
             show_tray_icon: false,
             show_dock_icon: false,
             autostart: true,
+            theme: "dark".into(),
+            language: "zh".into(),
         };
         let json = serde_json::to_string(&settings).unwrap();
         let deserialized: AppSettings = serde_json::from_str(&json).unwrap();
@@ -609,6 +627,8 @@ mod tests {
         assert!(!deserialized.show_tray_icon);
         assert!(!deserialized.show_dock_icon);
         assert!(deserialized.autostart);
+        assert_eq!(deserialized.theme, "dark");
+        assert_eq!(deserialized.language, "zh");
     }
 
     // --- scan_coding_configs ---

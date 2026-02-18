@@ -13,6 +13,9 @@ export interface BackupEntry {
   last_synced: string | null;
 }
 
+export type Theme = "auto" | "light" | "dark";
+export type Language = "auto" | "zh" | "en";
+
 export interface AppSettings {
   gdrive_path: string;
   backup_dir_name: string;
@@ -22,6 +25,8 @@ export interface AppSettings {
   show_tray_icon: boolean;
   show_dock_icon: boolean;
   autostart: boolean;
+  theme: Theme;
+  language: Language;
 }
 
 export interface SyncResult {
