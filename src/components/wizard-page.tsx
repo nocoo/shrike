@@ -110,7 +110,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-sm font-semibold">Quick Add</h1>
+          <h1 className="text-base font-semibold">Quick Add</h1>
         </div>
       </header>
 
@@ -119,7 +119,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
         {scanState === "scanning" && (
           <div className="flex flex-col items-center justify-center gap-3 py-12">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Scanning for coding agent configs...
             </p>
           </div>
@@ -128,7 +128,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
         {scanState === "done" && configs.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-3 py-12">
             <FolderCog className="h-6 w-6 text-muted-foreground/60" />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               No coding agent configs found
             </p>
             <Button variant="outline" size="sm" onClick={handleScan}>
@@ -141,13 +141,13 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
         {scanState === "done" && configs.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Detected ({configs.length})
               </h2>
               <Button
                 variant="ghost"
                 size="xs"
-                className="text-[10px] text-muted-foreground"
+                className="text-[11px] text-muted-foreground"
                 onClick={toggleAll}
               >
                 {configs.every((c) => c.selected || c.added)
@@ -175,18 +175,18 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-medium">
+                      <span className="text-sm font-medium">
                         {config.agent}
                       </span>
                       {config.added && (
                         <Check className="h-3 w-3 text-green-600 dark:text-green-400" />
                       )}
                     </div>
-                    <p className="truncate text-[10px] text-muted-foreground">
+                    <p className="truncate text-[11px] text-muted-foreground">
                       {config.path}
                     </p>
                     {config.error && (
-                      <p className="text-[10px] text-destructive">
+                      <p className="text-[11px] text-destructive">
                         {config.error}
                       </p>
                     )}
@@ -196,7 +196,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
             </div>
 
             {addedCount > 0 && addedCount === configs.length && (
-              <p className="text-center text-[10px] text-green-600 dark:text-green-400">
+              <p className="text-center text-[11px] text-green-600 dark:text-green-400">
                 All configs added to sync list
               </p>
             )}

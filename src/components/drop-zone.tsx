@@ -13,7 +13,7 @@ export function DropZone({ isDragging, hasEntries }: DropZoneProps) {
     return (
       <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
         <div className="rounded-lg border-2 border-dashed border-primary px-12 py-8">
-          <p className="text-xs font-medium text-primary">
+          <p className="text-sm font-medium text-primary">
             Drop to add to backup list
           </p>
         </div>
@@ -29,10 +29,10 @@ export function DropZone({ isDragging, hasEntries }: DropZoneProps) {
           "flex flex-1 flex-col items-center justify-center gap-2 px-8"
         )}
       >
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Drag files or folders here
         </p>
-        <p className="text-[10px] text-muted-foreground/60">
+        <p className="text-[11px] text-muted-foreground/60">
           or click + to browse
         </p>
       </div>

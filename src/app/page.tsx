@@ -47,7 +47,7 @@ export default function Home() {
   if (loading) {
     return (
       <main className="flex h-screen items-center justify-center">
-        <p className="text-xs text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground">Loading...</p>
       </main>
     );
   }
