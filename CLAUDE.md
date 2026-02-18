@@ -34,8 +34,8 @@ Rules: imperative mood, lowercase, max 50 chars, no period
 
 ### Test commands
 ```bash
-bun run test          # vitest (frontend, 46 tests)
-bun run test:rs       # cargo test --lib (rust UT, 94 tests)
+bun run test          # vitest (frontend, 70 tests)
+bun run test:rs       # cargo test --lib (rust UT, 101 tests)
 bun run test:e2e:rs   # cargo test --tests (rust E2E, 12 tests)
 bun run test:all      # all of the above
 bun run lint          # eslint + clippy
@@ -46,10 +46,10 @@ bun run lint          # eslint + clippy
 - **pre-push**: `bun run test && bun run lint && bun run test:rs && bun run test:e2e:rs`
 
 ### Test distribution
-- Rust UT: 94 (types 12, error 4, commands 5, sync/filelist 13, sync/validation 23, sync/executor 16, sync/mod 4, webhook 4, sync status 5, gdrive detect 8)
+- Rust UT: 101 (types 12, error 4, commands 5, sync/filelist 13, sync/validation 23, sync/executor 16, sync/mod 4, webhook 4, sync status 5, gdrive detect 8, scan configs 7)
 - Rust E2E: 12 (sync_e2e 7, webhook_e2e 5)
-- TS: 46 (utils 4, types 3, components 39)
-- **Total: 152**
+- TS: 70 (utils 4, types 3, components 63)
+- **Total: 183**
 
 ### Coverage target
 - Core sync logic: 95%+
@@ -66,7 +66,7 @@ sync/mod.rs         → Orchestrate: generate → validate → execute
 ```
 
 ### Key API paths
-- `commands.rs` → Tauri IPC: add_entry, remove_entry, list_entries, get_settings, update_settings, trigger_sync
+- `commands.rs` → Tauri IPC: add_entry, remove_entry, list_entries, get_settings, update_settings, trigger_sync, scan_coding_configs
 - `webhook.rs` → HTTP: GET /status, POST /sync (both require Bearer token)
 
 ## Known Issues & Gotchas
