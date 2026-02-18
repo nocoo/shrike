@@ -39,3 +39,17 @@ export interface DetectedConfig {
   path: string;
   item_type: ItemType;
 }
+
+export interface TreeChild {
+  name: string;
+  path: string;
+  item_type: ItemType;
+}
+
+export interface AgentTree {
+  agent: string;
+  path: string;
+  item_type: ItemType;
+  children: TreeChild[];
+  siblings: TreeChild[];
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { BackupEntry, AppSettings, SyncResult } from "./types";
+import type { BackupEntry, AppSettings, SyncResult, AgentTree, TreeChild } from "./types";
 
 describe("types", () => {
   it("BackupEntry shape matches expected structure", () => {
@@ -43,5 +43,30 @@ describe("types", () => {
     };
     expect(result.exit_code).toBe(0);
     expect(result.files_transferred).toBe(10);
+  });
+
+  it("AgentTree shape matches expected structure", () => {
+    const child: TreeChild = {
+      name: "settings.json",
+      path: "/Users/test/.claude/settings.json",
+      item_type: "file",
+    };
+    const sibling: TreeChild = {
+      name: ".claude.json",
+      path: "/Users/test/.claude.json",
+      item_type: "file",
+    };
+    const tree: AgentTree = {
+      agent: "Claude Code",
+      path: "/Users/test/.claude",
+      item_type: "directory",
+      children: [child],
+      siblings: [sibling],
+    };
+    expect(tree.agent).toBe("Claude Code");
+    expect(tree.children).toHaveLength(1);
+    expect(tree.children[0].name).toBe("settings.json");
+    expect(tree.siblings).toHaveLength(1);
+    expect(tree.siblings[0].name).toBe(".claude.json");
   });
 });

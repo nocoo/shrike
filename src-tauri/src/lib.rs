@@ -34,6 +34,7 @@ pub fn run() {
             commands::set_tray_visible,
             commands::set_dock_visible,
             commands::scan_coding_configs,
+            commands::scan_coding_configs_tree,
         ])
         .setup(|app| {
             // Load settings

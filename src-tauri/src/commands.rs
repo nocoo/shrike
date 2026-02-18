@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use crate::error::{Result, ShrikeError};
 use crate::sync;
-use crate::types::{AppSettings, BackupEntry, DetectedConfig, ItemType, SyncResult};
+use crate::types::{AgentTree, AppSettings, BackupEntry, DetectedConfig, ItemType, SyncResult};
 
 const STORE_FILE: &str = "shrike_data.json";
 const ITEMS_KEY: &str = "items";
@@ -223,6 +223,14 @@ pub fn set_dock_visible(app: AppHandle, visible: bool) -> Result<()> {
 pub fn scan_coding_configs() -> Result<Vec<DetectedConfig>> {
     let home = dirs::home_dir().ok_or_else(|| ShrikeError::PathNotFound("~".to_string()))?;
     Ok(crate::types::scan_coding_configs(&home))
+}
+
+/// Scan the user's home directory for coding agent configurations,
+/// returning a tree structure with first-level children and sibling files.
+#[tauri::command]
+pub fn scan_coding_configs_tree() -> Result<Vec<AgentTree>> {
+    let home = dirs::home_dir().ok_or_else(|| ShrikeError::PathNotFound("~".to_string()))?;
+    Ok(crate::types::scan_coding_configs_tree(&home))
 }
 
 #[cfg(test)]

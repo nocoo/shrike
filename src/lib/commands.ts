@@ -4,7 +4,7 @@
  */
 
 import { invoke } from "@tauri-apps/api/core";
-import type { AppSettings, BackupEntry, DetectedConfig, SyncResult } from "./types";
+import type { AgentTree, AppSettings, BackupEntry, DetectedConfig, SyncResult } from "./types";
 
 export async function addEntry(path: string): Promise<BackupEntry> {
   return invoke<BackupEntry>("add_entry", { path });
@@ -50,4 +50,8 @@ export async function setDockVisible(visible: boolean): Promise<void> {
 
 export async function scanCodingConfigs(): Promise<DetectedConfig[]> {
   return invoke<DetectedConfig[]>("scan_coding_configs");
+}
+
+export async function scanCodingConfigsTree(): Promise<AgentTree[]> {
+  return invoke<AgentTree[]>("scan_coding_configs_tree");
 }

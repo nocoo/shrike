@@ -2,20 +2,63 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
 // Mock Tauri commands
-const mockScanCodingConfigs = vi.fn();
+const mockScanCodingConfigsTree = vi.fn();
 const mockAddEntry = vi.fn();
 
 vi.mock("@/lib/commands", () => ({
-  scanCodingConfigs: (...args: unknown[]) => mockScanCodingConfigs(...args),
+  scanCodingConfigsTree: (...args: unknown[]) =>
+    mockScanCodingConfigsTree(...args),
   addEntry: (...args: unknown[]) => mockAddEntry(...args),
 }));
 
 import { WizardPage } from "./wizard-page";
+import type { AgentTree } from "@/lib/types";
 
-const mockConfigs = [
-  { agent: "Claude Code", path: "/Users/test/.claude", item_type: "directory" as const },
-  { agent: "Cursor", path: "/Users/test/.cursor", item_type: "directory" as const },
-  { agent: "OpenCode", path: "/Users/test/.config/opencode", item_type: "directory" as const },
+const mockTrees: AgentTree[] = [
+  {
+    agent: "Claude Code",
+    path: "/Users/test/.claude",
+    item_type: "directory",
+    children: [
+      {
+        name: "projects",
+        path: "/Users/test/.claude/projects",
+        item_type: "directory",
+      },
+      {
+        name: "settings.json",
+        path: "/Users/test/.claude/settings.json",
+        item_type: "file",
+      },
+    ],
+    siblings: [
+      {
+        name: ".claude.json",
+        path: "/Users/test/.claude.json",
+        item_type: "file",
+      },
+    ],
+  },
+  {
+    agent: "OpenCode",
+    path: "/Users/test/.config/opencode",
+    item_type: "directory",
+    children: [
+      {
+        name: "opencode.json",
+        path: "/Users/test/.config/opencode/opencode.json",
+        item_type: "file",
+      },
+    ],
+    siblings: [],
+  },
+  {
+    agent: "Aider",
+    path: "/Users/test/.aider.conf.yml",
+    item_type: "file",
+    children: [],
+    siblings: [],
+  },
 ];
 
 describe("WizardPage", () => {
@@ -26,7 +69,9 @@ describe("WizardPage", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockScanCodingConfigs.mockResolvedValue([...mockConfigs]);
+    mockScanCodingConfigsTree.mockResolvedValue(
+      JSON.parse(JSON.stringify(mockTrees))
+    );
     mockAddEntry.mockResolvedValue({
       id: "test-id",
       path: "/test",
@@ -36,44 +81,43 @@ describe("WizardPage", () => {
     });
   });
 
-  it("renders Quick Add title", async () => {
+  it("renders AI CLI Backup title", async () => {
     render(<WizardPage {...defaultProps} />);
-    expect(screen.getByText("Quick Add")).toBeInTheDocument();
+    expect(screen.getByText("AI CLI Backup")).toBeInTheDocument();
   });
 
   it("shows scanning state initially", async () => {
-    // Keep the scan pending to see loading state
-    mockScanCodingConfigs.mockReturnValue(new Promise(() => {}));
+    mockScanCodingConfigsTree.mockReturnValue(new Promise(() => {}));
     render(<WizardPage {...defaultProps} />);
 
     expect(
-      screen.getByText("Scanning for coding agent configs...")
+      screen.getByText("Scanning for AI CLI configs...")
     ).toBeInTheDocument();
   });
 
-  it("displays detected configs after scan", async () => {
+  it("displays detected agents after scan", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Claude Code")).toBeInTheDocument();
-      expect(screen.getByText("Cursor")).toBeInTheDocument();
       expect(screen.getByText("OpenCode")).toBeInTheDocument();
+      expect(screen.getByText("Aider")).toBeInTheDocument();
     });
   });
 
   it("shows empty state when no configs found", async () => {
-    mockScanCodingConfigs.mockResolvedValue([]);
+    mockScanCodingConfigsTree.mockResolvedValue([]);
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(
-        screen.getByText("No coding agent configs found")
+        screen.getByText("No AI CLI configs found")
       ).toBeInTheDocument();
     });
   });
 
   it("shows Scan Again button when no configs found", async () => {
-    mockScanCodingConfigs.mockResolvedValue([]);
+    mockScanCodingConfigsTree.mockResolvedValue([]);
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
@@ -89,75 +133,160 @@ describe("WizardPage", () => {
     });
   });
 
-  it("all configs are selected by default", async () => {
+  it("all selectable paths are selected by default", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
+      // Visible checkboxes (collapsible closed):
+      // Claude: 1 parent + 1 sibling (.claude.json) = 2
+      // OpenCode: 1 parent = 1
+      // Aider: 1 file = 1
+      // Total visible = 4
       const checkboxes = screen.getAllByRole("checkbox");
-      expect(checkboxes).toHaveLength(3);
+      expect(checkboxes).toHaveLength(4);
       checkboxes.forEach((cb) => expect(cb).toBeChecked());
     });
   });
 
-  it("toggles individual config selection", async () => {
+  it("toggles individual child selection", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Claude Code")).toBeInTheDocument();
     });
 
-    const checkboxes = screen.getAllByRole("checkbox");
-    fireEvent.click(checkboxes[0]);
+    // Expand Claude Code collapsible to show children
+    const claudeRow = screen.getByText("Claude Code").closest("div")!;
+    const expandBtn = claudeRow
+      .closest("[data-state]")!
+      .querySelector("button");
+    fireEvent.click(expandBtn!);
 
-    expect(checkboxes[0]).not.toBeChecked();
+    await waitFor(() => {
+      expect(screen.getByText("projects")).toBeInTheDocument();
+    });
+
+    // Find the "projects" checkbox — it's a child of Claude Code
+    const projectsLabel = screen.getByText("projects");
+    const checkbox = projectsLabel
+      .closest("label")!
+      .querySelector("input[type='checkbox']") as HTMLInputElement;
+
+    fireEvent.click(checkbox);
+    expect(checkbox).not.toBeChecked();
   });
 
   it("shows correct add button text with count", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Add 3 to Sync List")).toBeInTheDocument();
+      // Claude: 2 children + 1 sibling = 3
+      // OpenCode: 1 child = 1
+      // Aider: 1 file = 1
+      // Total = 5 selectable paths
+      expect(screen.getByText("Add 5 to Sync List")).toBeInTheDocument();
     });
   });
 
-  it("updates add button count when item is deselected", async () => {
+  it("updates add button count when child is deselected", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Add 3 to Sync List")).toBeInTheDocument();
+      expect(screen.getByText("Add 5 to Sync List")).toBeInTheDocument();
     });
 
-    const checkboxes = screen.getAllByRole("checkbox");
-    fireEvent.click(checkboxes[0]);
+    // Expand Claude Code collapsible
+    const claudeRow = screen.getByText("Claude Code").closest("div")!;
+    const expandBtn = claudeRow
+      .closest("[data-state]")!
+      .querySelector("button");
+    fireEvent.click(expandBtn!);
 
-    expect(screen.getByText("Add 2 to Sync List")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("projects")).toBeInTheDocument();
+    });
+
+    const projectsLabel = screen.getByText("projects");
+    const checkbox = projectsLabel
+      .closest("label")!
+      .querySelector("input[type='checkbox']") as HTMLInputElement;
+    fireEvent.click(checkbox);
+
+    expect(screen.getByText("Add 4 to Sync List")).toBeInTheDocument();
   });
 
-  it("calls addEntry for each selected config", async () => {
+  it("calls addEntry for selected paths", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Add 3 to Sync List")).toBeInTheDocument();
+      expect(screen.getByText("Add 5 to Sync List")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText("Add 3 to Sync List"));
+    fireEvent.click(screen.getByText("Add 5 to Sync List"));
 
     await waitFor(() => {
-      expect(mockAddEntry).toHaveBeenCalledTimes(3);
+      // When all children selected → folds to parent directory
+      // Claude: all children selected → adds parent .claude + sibling .claude.json
+      // OpenCode: all children selected → adds parent .config/opencode
+      // Aider: file → adds .aider.conf.yml
       expect(mockAddEntry).toHaveBeenCalledWith("/Users/test/.claude");
-      expect(mockAddEntry).toHaveBeenCalledWith("/Users/test/.cursor");
-      expect(mockAddEntry).toHaveBeenCalledWith("/Users/test/.config/opencode");
+      expect(mockAddEntry).toHaveBeenCalledWith("/Users/test/.claude.json");
+      expect(mockAddEntry).toHaveBeenCalledWith(
+        "/Users/test/.config/opencode"
+      );
+      expect(mockAddEntry).toHaveBeenCalledWith(
+        "/Users/test/.aider.conf.yml"
+      );
     });
   });
 
-  it("shows Done button after all configs are added", async () => {
+  it("adds individual children when not all selected", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Add 3 to Sync List")).toBeInTheDocument();
+      expect(screen.getByText("Claude Code")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText("Add 3 to Sync List"));
+    // Expand Claude Code collapsible
+    const claudeRow = screen.getByText("Claude Code").closest("div")!;
+    const expandBtn = claudeRow
+      .closest("[data-state]")!
+      .querySelector("button");
+    fireEvent.click(expandBtn!);
+
+    await waitFor(() => {
+      expect(screen.getByText("projects")).toBeInTheDocument();
+    });
+
+    // Deselect "projects" child of Claude Code
+    const projectsLabel = screen.getByText("projects");
+    const checkbox = projectsLabel
+      .closest("label")!
+      .querySelector("input[type='checkbox']") as HTMLInputElement;
+    fireEvent.click(checkbox);
+
+    fireEvent.click(screen.getByText("Add 4 to Sync List"));
+
+    await waitFor(() => {
+      // Claude: only settings.json selected (not all children) → adds individual child
+      expect(mockAddEntry).toHaveBeenCalledWith(
+        "/Users/test/.claude/settings.json"
+      );
+      // Sibling still added
+      expect(mockAddEntry).toHaveBeenCalledWith("/Users/test/.claude.json");
+      // Should NOT add parent .claude since not all children selected
+      expect(mockAddEntry).not.toHaveBeenCalledWith("/Users/test/.claude");
+    });
+  });
+
+  it("shows Done button after all items are added", async () => {
+    render(<WizardPage {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Add 5 to Sync List")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("Add 5 to Sync List"));
 
     await waitFor(() => {
       expect(screen.getByText("Done")).toBeInTheDocument();
@@ -168,10 +297,10 @@ describe("WizardPage", () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Add 3 to Sync List")).toBeInTheDocument();
+      expect(screen.getByText("Add 5 to Sync List")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText("Add 3 to Sync List"));
+    fireEvent.click(screen.getByText("Add 5 to Sync List"));
 
     await waitFor(() => {
       expect(screen.getByText("Done")).toBeInTheDocument();
@@ -192,7 +321,6 @@ describe("WizardPage", () => {
 
   it("shows error message when addEntry fails", async () => {
     mockAddEntry.mockRejectedValueOnce(new Error("Permission denied"));
-    // Subsequent calls succeed
     mockAddEntry.mockResolvedValue({
       id: "test-id",
       path: "/test",
@@ -204,10 +332,10 @@ describe("WizardPage", () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Add 3 to Sync List")).toBeInTheDocument();
+      expect(screen.getByText("Add 5 to Sync List")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText("Add 3 to Sync List"));
+    fireEvent.click(screen.getByText("Add 5 to Sync List"));
 
     await waitFor(() => {
       expect(screen.getByText("Permission denied")).toBeInTheDocument();
@@ -218,22 +346,24 @@ describe("WizardPage", () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getAllByRole("checkbox")).toHaveLength(3);
+      // 4 visible checkboxes (collapsibles closed)
+      expect(screen.getAllByRole("checkbox")).toHaveLength(4);
     });
 
-    // Deselect all
-    const checkboxes = screen.getAllByRole("checkbox");
-    checkboxes.forEach((cb) => fireEvent.click(cb));
+    // Click Deselect all
+    fireEvent.click(screen.getByText("Deselect all"));
 
-    // The add button should be disabled (text shows "Add 0 to Sync List")
     expect(screen.getByText("Add 0 to Sync List")).toBeInTheDocument();
-    expect(screen.getByText("Add 0 to Sync List").closest("button")).toBeDisabled();
+    expect(
+      screen.getByText("Add 0 to Sync List").closest("button")
+    ).toBeDisabled();
   });
 
   it("has drag region header for window dragging", async () => {
     const { container } = render(<WizardPage {...defaultProps} />);
-    const dragRegions = container.querySelectorAll("[data-tauri-drag-region]");
-    // header + traffic light zone + content row = 3 drag regions
+    const dragRegions = container.querySelectorAll(
+      "[data-tauri-drag-region]"
+    );
     expect(dragRegions.length).toBe(3);
   });
 
@@ -266,45 +396,122 @@ describe("WizardPage", () => {
     expect(screen.getByText("Select all")).toBeInTheDocument();
   });
 
-  it("shows config paths", async () => {
+  it("shows agent paths", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("/Users/test/.claude")).toBeInTheDocument();
-      expect(screen.getByText("/Users/test/.cursor")).toBeInTheDocument();
       expect(
         screen.getByText("/Users/test/.config/opencode")
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("/Users/test/.aider.conf.yml")
       ).toBeInTheDocument();
     });
   });
 
+  it("shows sibling files", async () => {
+    render(<WizardPage {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(".claude.json")).toBeInTheDocument();
+    });
+  });
+
+  it("shows child items for directory agents", async () => {
+    render(<WizardPage {...defaultProps} />);
+
+    await waitFor(() => {
+      // Children are inside collapsible — should not be visible by default
+      // but siblings labeled "Related files" should be visible
+      expect(screen.getByText(".claude.json")).toBeInTheDocument();
+    });
+  });
+
+  it("expands collapsible to show children", async () => {
+    render(<WizardPage {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Claude Code")).toBeInTheDocument();
+    });
+
+    // Find expand button for Claude Code (the chevron button)
+    const claudeRow = screen.getByText("Claude Code").closest("div")!;
+    const expandBtn = claudeRow
+      .closest("[data-state]")!
+      .querySelector("button");
+    if (expandBtn) {
+      fireEvent.click(expandBtn);
+    }
+
+    await waitFor(() => {
+      expect(screen.getByText("projects")).toBeInTheDocument();
+      expect(screen.getByText("settings.json")).toBeInTheDocument();
+    });
+  });
+
   it("handles scan failure gracefully", async () => {
-    mockScanCodingConfigs.mockRejectedValue(new Error("Scan error"));
+    mockScanCodingConfigsTree.mockRejectedValue(new Error("Scan error"));
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(
-        screen.getByText("No coding agent configs found")
+        screen.getByText("No AI CLI configs found")
       ).toBeInTheDocument();
     });
   });
 
   it("re-scans when Scan Again is clicked", async () => {
-    mockScanCodingConfigs.mockResolvedValueOnce([]);
+    mockScanCodingConfigsTree.mockResolvedValueOnce([]);
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Scan Again")).toBeInTheDocument();
     });
 
-    // Now return configs on second scan
-    mockScanCodingConfigs.mockResolvedValueOnce([...mockConfigs]);
+    mockScanCodingConfigsTree.mockResolvedValueOnce(
+      JSON.parse(JSON.stringify(mockTrees))
+    );
     fireEvent.click(screen.getByText("Scan Again"));
 
     await waitFor(() => {
       expect(screen.getByText("Claude Code")).toBeInTheDocument();
     });
 
-    expect(mockScanCodingConfigs).toHaveBeenCalledTimes(2);
+    expect(mockScanCodingConfigsTree).toHaveBeenCalledTimes(2);
+  });
+
+  it("toggles agent parent checkbox to select/deselect all children", async () => {
+    render(<WizardPage {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Claude Code")).toBeInTheDocument();
+    });
+
+    // Find parent checkbox for Claude Code
+    const claudeAgent = screen.getByText("Claude Code").closest("div")!;
+    const parentCheckbox = claudeAgent
+      .closest("[data-state]")!
+      .querySelector("input[type='checkbox']") as HTMLInputElement;
+
+    // Deselect all children by clicking parent
+    fireEvent.click(parentCheckbox);
+    expect(parentCheckbox).not.toBeChecked();
+
+    // Re-select all by clicking parent again
+    fireEvent.click(parentCheckbox);
+    expect(parentCheckbox).toBeChecked();
+  });
+
+  it("shows file icon for file-type agents", async () => {
+    render(<WizardPage {...defaultProps} />);
+
+    await waitFor(() => {
+      // Aider is a file-type agent, should be in the document
+      expect(screen.getByText("Aider")).toBeInTheDocument();
+      expect(
+        screen.getByText("/Users/test/.aider.conf.yml")
+      ).toBeInTheDocument();
+    });
   });
 });

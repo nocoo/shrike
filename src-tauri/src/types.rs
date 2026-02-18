@@ -179,6 +179,35 @@ pub struct DetectedConfig {
     pub item_type: ItemType,
 }
 
+/// A child entry inside an agent's config directory (first level only).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TreeChild {
+    /// File or directory name (not full path)
+    pub name: String,
+    /// Absolute path
+    pub path: String,
+    /// Whether this is a file or directory
+    pub item_type: ItemType,
+}
+
+/// A tree-structured view of a coding agent's configuration.
+///
+/// Groups the agent's main config directory, its first-level children,
+/// and any sibling files (e.g. `.claude.json` next to `.claude/`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AgentTree {
+    /// Display name of the coding agent
+    pub agent: String,
+    /// Absolute path to the main config directory or file
+    pub path: String,
+    /// Whether the main config is a directory or file
+    pub item_type: ItemType,
+    /// First-level children (empty if main config is a file)
+    pub children: Vec<TreeChild>,
+    /// Sibling files that live next to the main config (e.g. `.claude.json`)
+    pub siblings: Vec<TreeChild>,
+}
+
 /// Known coding agent configuration locations (macOS).
 ///
 /// Each tuple: (agent_name, relative_path_from_home, is_directory).
@@ -198,6 +227,12 @@ const KNOWN_AGENT_CONFIGS: &[(&str, &str, bool)] = &[
     // VS Code
     ("VS Code", "Library/Application Support/Code/User", true),
 ];
+
+/// Known sibling file patterns for each agent.
+///
+/// Each tuple: (agent_name, relative_sibling_path_from_home).
+/// These are files that sit alongside the main config directory.
+const KNOWN_AGENT_SIBLINGS: &[(&str, &str)] = &[("Claude Code", ".claude.json")];
 
 /// Scan the user's home directory for known coding agent configurations.
 ///
@@ -222,6 +257,105 @@ pub fn scan_coding_configs(home_dir: &Path) -> Vec<DetectedConfig> {
             }
         })
         .collect()
+}
+
+/// Scan the user's home directory for known coding agent configurations,
+/// returning a tree structure with first-level children and sibling files.
+pub fn scan_coding_configs_tree(home_dir: &Path) -> Vec<AgentTree> {
+    KNOWN_AGENT_CONFIGS
+        .iter()
+        .filter_map(|(agent, rel_path, is_dir)| {
+            let full_path = home_dir.join(rel_path);
+            if !full_path.exists() {
+                return None;
+            }
+
+            let item_type = if *is_dir {
+                ItemType::Directory
+            } else {
+                ItemType::File
+            };
+
+            // Collect first-level children for directories
+            let children = if *is_dir {
+                list_first_level_children(&full_path)
+            } else {
+                Vec::new()
+            };
+
+            // Collect sibling files
+            let siblings = KNOWN_AGENT_SIBLINGS
+                .iter()
+                .filter(|(a, _)| *a == *agent)
+                .filter_map(|(_, sibling_rel)| {
+                    let sibling_path = home_dir.join(sibling_rel);
+                    if sibling_path.exists() {
+                        let sibling_type = if sibling_path.is_dir() {
+                            ItemType::Directory
+                        } else {
+                            ItemType::File
+                        };
+                        Some(TreeChild {
+                            name: sibling_rel.to_string(),
+                            path: sibling_path.to_string_lossy().to_string(),
+                            item_type: sibling_type,
+                        })
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            Some(AgentTree {
+                agent: (*agent).to_string(),
+                path: full_path.to_string_lossy().to_string(),
+                item_type,
+                children,
+                siblings,
+            })
+        })
+        .collect()
+}
+
+/// List first-level children of a directory, sorted alphabetically.
+/// Skips hidden files/directories (starting with '.') and .DS_Store.
+fn list_first_level_children(dir: &Path) -> Vec<TreeChild> {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return Vec::new();
+    };
+
+    let mut children: Vec<TreeChild> = entries
+        .filter_map(|e| e.ok())
+        .filter(|e| {
+            let name = e.file_name();
+            let name_str = name.to_string_lossy();
+            // Skip hidden files and .DS_Store
+            !name_str.starts_with('.')
+        })
+        .map(|e| {
+            let name = e.file_name().to_string_lossy().to_string();
+            let path = e.path().to_string_lossy().to_string();
+            let item_type = if e.path().is_dir() {
+                ItemType::Directory
+            } else {
+                ItemType::File
+            };
+            TreeChild {
+                name,
+                path,
+                item_type,
+            }
+        })
+        .collect();
+
+    // Sort: directories first, then files, alphabetically within each group
+    children.sort_by(|a, b| match (&a.item_type, &b.item_type) {
+        (ItemType::Directory, ItemType::File) => std::cmp::Ordering::Less,
+        (ItemType::File, ItemType::Directory) => std::cmp::Ordering::Greater,
+        _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
+    });
+
+    children
 }
 
 #[cfg(test)]
@@ -528,5 +662,126 @@ mod tests {
         assert_eq!(json["agent"], "Claude Code");
         assert_eq!(json["path"], "/Users/test/.claude");
         assert_eq!(json["item_type"], "directory");
+    }
+
+    // --- scan_coding_configs_tree ---
+
+    #[test]
+    fn scan_tree_empty_home() {
+        let dir = tempfile::tempdir().unwrap();
+        let results = scan_coding_configs_tree(dir.path());
+        assert!(results.is_empty());
+    }
+
+    #[test]
+    fn scan_tree_returns_children() {
+        let dir = tempfile::tempdir().unwrap();
+        let claude_dir = dir.path().join(".claude");
+        std::fs::create_dir_all(&claude_dir).unwrap();
+        std::fs::write(claude_dir.join("settings.json"), "{}").unwrap();
+        std::fs::create_dir_all(claude_dir.join("projects")).unwrap();
+
+        let results = scan_coding_configs_tree(dir.path());
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].agent, "Claude Code");
+        assert_eq!(results[0].children.len(), 2);
+
+        // directories first, then files
+        assert_eq!(results[0].children[0].name, "projects");
+        assert_eq!(results[0].children[0].item_type, ItemType::Directory);
+        assert_eq!(results[0].children[1].name, "settings.json");
+        assert_eq!(results[0].children[1].item_type, ItemType::File);
+    }
+
+    #[test]
+    fn scan_tree_skips_hidden_children() {
+        let dir = tempfile::tempdir().unwrap();
+        let claude_dir = dir.path().join(".claude");
+        std::fs::create_dir_all(&claude_dir).unwrap();
+        std::fs::write(claude_dir.join(".DS_Store"), "").unwrap();
+        std::fs::write(claude_dir.join(".hidden"), "").unwrap();
+        std::fs::write(claude_dir.join("visible.json"), "{}").unwrap();
+
+        let results = scan_coding_configs_tree(dir.path());
+        assert_eq!(results[0].children.len(), 1);
+        assert_eq!(results[0].children[0].name, "visible.json");
+    }
+
+    #[test]
+    fn scan_tree_finds_sibling_files() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join(".claude")).unwrap();
+        std::fs::write(dir.path().join(".claude.json"), "{}").unwrap();
+
+        let results = scan_coding_configs_tree(dir.path());
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].siblings.len(), 1);
+        assert_eq!(results[0].siblings[0].name, ".claude.json");
+        assert_eq!(results[0].siblings[0].item_type, ItemType::File);
+    }
+
+    #[test]
+    fn scan_tree_no_siblings_when_missing() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join(".claude")).unwrap();
+        // No .claude.json file
+
+        let results = scan_coding_configs_tree(dir.path());
+        assert_eq!(results[0].siblings.len(), 0);
+    }
+
+    #[test]
+    fn scan_tree_file_agent_has_no_children() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join(".aider.conf.yml"), "model: gpt-4").unwrap();
+
+        let results = scan_coding_configs_tree(dir.path());
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].agent, "Aider");
+        assert_eq!(results[0].item_type, ItemType::File);
+        assert!(results[0].children.is_empty());
+    }
+
+    #[test]
+    fn scan_tree_children_sorted_dirs_first() {
+        let dir = tempfile::tempdir().unwrap();
+        let claude_dir = dir.path().join(".claude");
+        std::fs::create_dir_all(&claude_dir).unwrap();
+        std::fs::write(claude_dir.join("alpha.txt"), "").unwrap();
+        std::fs::create_dir_all(claude_dir.join("beta")).unwrap();
+        std::fs::write(claude_dir.join("gamma.txt"), "").unwrap();
+        std::fs::create_dir_all(claude_dir.join("delta")).unwrap();
+
+        let results = scan_coding_configs_tree(dir.path());
+        let names: Vec<&str> = results[0]
+            .children
+            .iter()
+            .map(|c| c.name.as_str())
+            .collect();
+        // dirs first (alpha sorted), then files (alpha sorted)
+        assert_eq!(names, vec!["beta", "delta", "alpha.txt", "gamma.txt"]);
+    }
+
+    #[test]
+    fn scan_tree_serializes() {
+        let tree = AgentTree {
+            agent: "Claude Code".into(),
+            path: "/Users/test/.claude".into(),
+            item_type: ItemType::Directory,
+            children: vec![TreeChild {
+                name: "settings.json".into(),
+                path: "/Users/test/.claude/settings.json".into(),
+                item_type: ItemType::File,
+            }],
+            siblings: vec![TreeChild {
+                name: ".claude.json".into(),
+                path: "/Users/test/.claude.json".into(),
+                item_type: ItemType::File,
+            }],
+        };
+        let json = serde_json::to_value(&tree).unwrap();
+        assert_eq!(json["agent"], "Claude Code");
+        assert_eq!(json["children"][0]["name"], "settings.json");
+        assert_eq!(json["siblings"][0]["name"], ".claude.json");
     }
 }

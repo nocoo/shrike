@@ -34,8 +34,8 @@ Rules: imperative mood, lowercase, max 50 chars, no period
 
 ### Test commands
 ```bash
-bun run test          # vitest (frontend, 73 tests)
-bun run test:rs       # cargo test --lib (rust UT, 101 tests)
+bun run test          # vitest (frontend, 80 tests)
+bun run test:rs       # cargo test --lib (rust UT, 109 tests)
 bun run test:e2e:rs   # cargo test --tests (rust E2E, 12 tests)
 bun run test:all      # all of the above
 bun run lint          # eslint + clippy
@@ -46,10 +46,10 @@ bun run lint          # eslint + clippy
 - **pre-push**: `bun run test && bun run lint && bun run test:rs && bun run test:e2e:rs`
 
 ### Test distribution
-- Rust UT: 101 (types 12, error 4, commands 5, sync/filelist 13, sync/validation 23, sync/executor 16, sync/mod 4, webhook 4, sync status 5, gdrive detect 8, scan configs 7)
+- Rust UT: 109 (types 12, error 4, commands 5, sync/filelist 13, sync/validation 23, sync/executor 16, sync/mod 4, webhook 4, sync status 5, gdrive detect 8, scan configs 7, scan tree 8)
 - Rust E2E: 12 (sync_e2e 7, webhook_e2e 5)
-- TS: 73 (utils 4, types 3, components 66)
-- **Total: 186**
+- TS: 80 (utils 4, types 4, components 72)
+- **Total: 201**
 
 ### Coverage target
 - Core sync logic: 95%+
@@ -66,7 +66,7 @@ sync/mod.rs         → Orchestrate: generate → validate → execute
 ```
 
 ### Key API paths
-- `commands.rs` → Tauri IPC: add_entry, remove_entry, list_entries, get_settings, update_settings, trigger_sync, scan_coding_configs
+- `commands.rs` → Tauri IPC: add_entry, remove_entry, list_entries, get_settings, update_settings, trigger_sync, scan_coding_configs, scan_coding_configs_tree
 - `webhook.rs` → HTTP: GET /status, POST /sync (both require Bearer token)
 
 ## Known Issues & Gotchas
@@ -90,3 +90,7 @@ sync/mod.rs         → Orchestrate: generate → validate → execute
 4. **Always verify TS test count after adding component tests** — The test count in CLAUDE.md said 31 TS tests but the actual count was 33 after toolbar drag-region tests were added. Keep the count accurate to avoid confusion.
 
 5. **Testing Library query is `getByAltText`, not `getByAlt`** — The correct RTL query for finding elements by `alt` attribute is `screen.getByAltText("...")`. `getByAlt` does not exist and throws a TypeError at runtime.
+
+6. **Radix Collapsible content is NOT in the DOM when closed** — Tests that query for child elements inside a `<CollapsiblePrimitive.Content>` will fail if the collapsible is in its default closed state. Must programmatically click the trigger button to expand before asserting on children. This affects both `getByText` and `getAllByRole("checkbox")` counts.
+
+7. **Smart folding requires marking children as added too** — When `computePathsToAdd()` folds all children into a parent directory path and `addEntry(parentPath)` succeeds, the `added` map must also mark each child path as added. Otherwise `allAdded` (which checks selectable child paths) never becomes true, and the "Done" button never appears.
