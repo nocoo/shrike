@@ -72,9 +72,9 @@ describe("groupEntries", () => {
     const groups = groupEntries(entries);
 
     expect(groups).toHaveLength(2);
-    expect(groups[0].key).toBe("Documents");
+    expect(groups[0].key).toBe("/Users/nocoo/Documents");
     expect(groups[0].entries).toHaveLength(1);
-    expect(groups[1].key).toBe("workspace");
+    expect(groups[1].key).toBe("/Users/nocoo/workspace");
     expect(groups[1].entries).toHaveLength(2);
   });
 
@@ -115,7 +115,7 @@ describe("groupEntries", () => {
     const groups = groupEntries(entries);
 
     expect(groups).toHaveLength(2);
-    expect(groups[0].key).toBe("workspace");
+    expect(groups[0].key).toBe("/Users/nocoo/workspace");
     expect(groups[1].key).toBe("/");
   });
 
@@ -129,7 +129,7 @@ describe("groupEntries", () => {
     ];
     const groups = groupEntries(entries);
     expect(groups).toHaveLength(1);
-    expect(groups[0].key).toBe("Documents");
+    expect(groups[0].key).toBe("/Users/nocoo/Documents");
     expect(groups[0].entries).toHaveLength(1);
   });
 
@@ -141,8 +141,8 @@ describe("groupEntries", () => {
     const groups = groupEntries(entries);
 
     expect(groups).toHaveLength(2);
-    expect(groups[0].key).toBe(".claude");
-    expect(groups[1].key).toBe(".cursor");
+    expect(groups[0].key).toBe("/Users/nocoo/.claude");
+    expect(groups[1].key).toBe("/Users/nocoo/.cursor");
   });
 
   it("sorts group keys alphabetically, case-insensitive", () => {
@@ -153,7 +153,7 @@ describe("groupEntries", () => {
     ];
     const groups = groupEntries(entries);
 
-    expect(groups.map((g) => g.key)).toEqual(["alpha", "Middle", "Zebra"]);
+    expect(groups.map((g) => g.key)).toEqual(["/Users/nocoo/alpha", "/Users/nocoo/Middle", "/Users/nocoo/Zebra"]);
   });
 
   it("handles entry directly under home (no subdirectory)", () => {
@@ -163,7 +163,7 @@ describe("groupEntries", () => {
     const groups = groupEntries(entries);
 
     expect(groups).toHaveLength(1);
-    expect(groups[0].key).toBe(".aider.conf.yml");
+    expect(groups[0].key).toBe("/Users/nocoo/.aider.conf.yml");
     expect(groups[0].entries).toHaveLength(1);
   });
 });
@@ -201,8 +201,9 @@ describe("FileList", () => {
 
   it("renders parent directory paths as full paths", () => {
     render(<FileList entries={mockEntries} onRemove={() => {}} />);
-    expect(screen.getByText("/Users/nocoo/Documents")).toBeInTheDocument();
-    expect(screen.getByText("/Users/nocoo/workspace")).toBeInTheDocument();
+    // Both group headers and entry dir lines may show the same path text
+    expect(screen.getAllByText("/Users/nocoo/Documents").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("/Users/nocoo/workspace").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders item type badges", () => {
@@ -245,8 +246,9 @@ describe("FileList", () => {
       },
     ];
     render(<FileList entries={multiGroupEntries} onRemove={() => {}} />);
-    expect(screen.getByText("Documents")).toBeInTheDocument();
-    expect(screen.getByText("workspace")).toBeInTheDocument();
+    // Group headers and entry dir lines may both show the path
+    expect(screen.getAllByText("/Users/nocoo/Documents").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("/Users/nocoo/workspace").length).toBeGreaterThanOrEqual(1);
   });
 
   it("hides group header when all entries are in one group", () => {

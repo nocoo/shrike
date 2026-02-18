@@ -20,7 +20,7 @@ export function formatPath(path: string): { dir: string; name: string } {
 }
 
 export interface EntryGroup {
-  /** Group key — first directory component under home (e.g. "workspace"), or "/" for non-home paths */
+  /** Group key — full path to the first directory under home (e.g. "/Users/nocoo/workspace"), or "/" for non-home paths */
   key: string;
   entries: BackupEntry[];
 }
@@ -39,8 +39,8 @@ export function detectHomePrefix(path: string): string | null {
  * Group entries by the first directory component under the home directory.
  * Within each group, directories come first, then files, alphabetically by name.
  *
- * Example: /Users/nocoo/workspace/personal/abc → group key "workspace"
- *          /Users/nocoo/.claude/settings.json  → group key ".claude"
+ * Example: /Users/nocoo/workspace/personal/abc → group key "/Users/nocoo/workspace"
+ *          /Users/nocoo/.claude/settings.json  → group key "/Users/nocoo/.claude"
  *          /etc/config                         → group key "/"
  */
 export function groupEntries(entries: BackupEntry[]): EntryGroup[] {
@@ -59,7 +59,8 @@ export function groupEntries(entries: BackupEntry[]): EntryGroup[] {
       // Extract first directory component after home prefix
       const relativePath = entry.path.slice(homePrefix.length + 1);
       const firstSlash = relativePath.indexOf("/");
-      key = firstSlash === -1 ? relativePath : relativePath.slice(0, firstSlash);
+      const firstDir = firstSlash === -1 ? relativePath : relativePath.slice(0, firstSlash);
+      key = homePrefix + "/" + firstDir;
     }
 
     const group = groupMap.get(key);
