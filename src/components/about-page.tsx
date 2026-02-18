@@ -38,8 +38,8 @@ export function AboutPage({ onBack }: AboutPageProps) {
         <Image
           src="/logo-512.png"
           alt="Shrike"
-          width={80}
-          height={80}
+          width={160}
+          height={160}
           className="rounded-lg"
         />
         <div className="text-center">
