@@ -156,6 +156,51 @@ pub fn trigger_sync(app: AppHandle) -> Result<SyncResult> {
     Ok(result)
 }
 
+/// Check if autostart is enabled.
+#[tauri::command]
+pub fn get_autostart(app: AppHandle) -> Result<bool> {
+    use tauri_plugin_autostart::ManagerExt;
+    let autostart = app.autolaunch();
+    autostart
+        .is_enabled()
+        .map_err(|e| ShrikeError::StoreError(e.to_string()))
+}
+
+/// Enable or disable autostart.
+#[tauri::command]
+pub fn set_autostart(app: AppHandle, enabled: bool) -> Result<()> {
+    use tauri_plugin_autostart::ManagerExt;
+    let autostart = app.autolaunch();
+    if enabled {
+        autostart
+            .enable()
+            .map_err(|e| ShrikeError::StoreError(e.to_string()))?;
+    } else {
+        autostart
+            .disable()
+            .map_err(|e| ShrikeError::StoreError(e.to_string()))?;
+    }
+    // Persist in settings
+    let mut settings = get_settings(app.clone())?;
+    settings.autostart = enabled;
+    update_settings(app, settings)?;
+    Ok(())
+}
+
+/// Show or hide the tray icon.
+#[tauri::command]
+pub fn set_tray_visible(app: AppHandle, visible: bool) -> Result<()> {
+    if let Some(tray) = app.tray_by_id("main-tray") {
+        tray.set_visible(visible)
+            .map_err(|e| ShrikeError::StoreError(e.to_string()))?;
+    }
+    // Persist in settings
+    let mut settings = get_settings(app.clone())?;
+    settings.show_tray_icon = visible;
+    update_settings(app, settings)?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

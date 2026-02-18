@@ -40,6 +40,8 @@ fn webhook_sync_flow_success() {
         backup_dir_name: "WebhookBackup".to_string(),
         webhook_port: 0,
         webhook_token: "test-token".to_string(),
+        show_tray_icon: true,
+        autostart: false,
     };
 
     let entries = vec![BackupEntry::new(canonical.clone(), ItemType::File)];
@@ -60,6 +62,8 @@ fn webhook_sync_flow_empty_entries_error() {
         backup_dir_name: "Backup".to_string(),
         webhook_port: 0,
         webhook_token: "token".to_string(),
+        show_tray_icon: true,
+        autostart: false,
     };
 
     let result = simulate_webhook_sync(&[], &settings);

@@ -92,6 +92,14 @@ pub struct AppSettings {
     pub backup_dir_name: String,
     pub webhook_port: u16,
     pub webhook_token: String,
+    #[serde(default = "default_true")]
+    pub show_tray_icon: bool,
+    #[serde(default)]
+    pub autostart: bool,
+}
+
+fn default_true() -> bool {
+    true
 }
 
 impl Default for AppSettings {
@@ -106,6 +114,8 @@ impl Default for AppSettings {
             backup_dir_name: String::from("ShrikeBackup"),
             webhook_port: 7022,
             webhook_token: Uuid::new_v4().to_string(),
+            show_tray_icon: true,
+            autostart: false,
         }
     }
 }
@@ -193,6 +203,8 @@ mod tests {
         assert_eq!(settings.backup_dir_name, "ShrikeBackup");
         assert_eq!(settings.webhook_port, 7022);
         assert!(!settings.webhook_token.is_empty());
+        assert!(settings.show_tray_icon);
+        assert!(!settings.autostart);
     }
 
     #[test]
@@ -202,6 +214,8 @@ mod tests {
             backup_dir_name: "Backup".into(),
             webhook_port: 8080,
             webhook_token: "token".into(),
+            show_tray_icon: true,
+            autostart: false,
         };
         assert_eq!(settings.destination_path(), "/mnt/gdrive/Backup");
     }
@@ -344,5 +358,36 @@ mod tests {
         let dir = ItemType::Directory;
         assert_eq!(serde_json::to_string(&file).unwrap(), "\"file\"");
         assert_eq!(serde_json::to_string(&dir).unwrap(), "\"directory\"");
+    }
+
+    #[test]
+    fn app_settings_serde_defaults_for_new_fields() {
+        // Simulate loading old settings JSON that lacks show_tray_icon and autostart
+        let json = r#"{
+            "gdrive_path": "/some/path",
+            "backup_dir_name": "Backup",
+            "webhook_port": 7022,
+            "webhook_token": "abc"
+        }"#;
+        let settings: AppSettings = serde_json::from_str(json).unwrap();
+        assert!(settings.show_tray_icon); // default_true
+        assert!(!settings.autostart); // default false
+    }
+
+    #[test]
+    fn app_settings_roundtrips_with_new_fields() {
+        let settings = AppSettings {
+            gdrive_path: "/test".into(),
+            backup_dir_name: "B".into(),
+            webhook_port: 9000,
+            webhook_token: "tok".into(),
+            show_tray_icon: false,
+            autostart: true,
+        };
+        let json = serde_json::to_string(&settings).unwrap();
+        let deserialized: AppSettings = serde_json::from_str(&json).unwrap();
+        assert_eq!(settings, deserialized);
+        assert!(!deserialized.show_tray_icon);
+        assert!(deserialized.autostart);
     }
 }

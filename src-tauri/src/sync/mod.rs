@@ -47,6 +47,8 @@ mod tests {
             backup_dir_name: "Backup".to_string(),
             webhook_port: 0,
             webhook_token: "test".to_string(),
+            show_tray_icon: true,
+            autostart: false,
         }
     }
 
