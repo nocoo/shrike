@@ -14,9 +14,9 @@ export function Toolbar({ entryCount, onAdd }: ToolbarProps) {
   return (
     <div
       data-tauri-drag-region
-      className="flex items-center justify-between border-b py-3 pr-4 pl-[70px]"
+      className="flex items-center justify-between border-b py-3 pr-3 pl-[78px]"
     >
-      <div className="flex items-center gap-2" data-tauri-drag-region>
+      <div className="flex items-center gap-2.5">
         <Image
           src="/logo-64.png"
           alt="Shrike"

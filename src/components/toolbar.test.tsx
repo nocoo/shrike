@@ -73,6 +73,6 @@ describe("Toolbar", () => {
   it("has left padding for macOS traffic light buttons", () => {
     const { container } = render(<Toolbar entryCount={0} onAdd={() => {}} />);
     const toolbar = container.firstElementChild as HTMLElement;
-    expect(toolbar.className).toContain("pl-[70px]");
+    expect(toolbar.className).toContain("pl-[78px]");
   });
 });
