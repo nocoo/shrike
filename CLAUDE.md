@@ -48,8 +48,8 @@ bun run lint          # eslint + clippy
 ### Test distribution
 - Rust UT: 84 (types 10, error 4, commands 5, sync/filelist 13, sync/validation 23, sync/executor 16, sync/mod 4, webhook 4, sync status 5)
 - Rust E2E: 12 (sync_e2e 7, webhook_e2e 5)
-- TS: 31 (utils 4, types 3, components 24)
-- **Total: 127**
+- TS: 33 (utils 4, types 3, components 26)
+- **Total: 129**
 
 ### Coverage target
 - Core sync logic: 95%+
