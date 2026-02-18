@@ -10,12 +10,12 @@
 
 ## Version Management
 
-### Current version: 0.1.0
+### Current version: 0.1.1
 
 Version is tracked in three files (keep in sync):
-- `package.json` → `"version": "0.1.0"`
-- `src-tauri/Cargo.toml` → `version = "0.1.0"`
-- `src-tauri/tauri.conf.json` → `"version": "0.1.0"`
+- `package.json` → `"version": "0.1.1"`
+- `src-tauri/Cargo.toml` → `version = "0.1.1"`
+- `src-tauri/tauri.conf.json` → `"version": "0.1.1"`
 
 ### Release process
 1. Update version in all three files

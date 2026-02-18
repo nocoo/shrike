@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] - 2026-02-18
+
+### Added
+- Dropdown menu on + button for separate "Add Files" / "Add Folders" selection
+- Standalone About page with logo, version, and GitHub link
+- Sync log as dedicated page with formatted summary
+- Separate file and directory counts in sync results
+- File list entries grouped by directory with full-path headers
+- Quick Add wizard redesigned with collapsible file tree and smart folding
+- Per-device backup subfolder via machine name setting
+
+### Fixed
+- Sync no longer blocks the UI (trigger_sync made async with spawn_blocking)
+- rsync directory recursion restored with explicit `-r` flag when using `--files-from`
+- File list refreshes when navigating back from wizard
+- Checkbox checked prop always boolean to avoid React warning
+- Scrollbar thumb visibility improved
+- About page logo upgraded to higher resolution (160x160)
+- Shell permission added for opening external links
+
+### Testing
+- 264 automated tests (109 Rust UT + 12 Rust E2E + 143 TypeScript)
+- Added `@testing-library/user-event` for Radix portal testing
+
 ## [0.1.0] - 2026-02-18
 
 ### Added
