@@ -12,6 +12,7 @@ vi.mock("@/lib/commands", () => ({
 }));
 
 import { WizardPage } from "./wizard-page";
+import { shouldDefaultSelect } from "./wizard-page";
 import type { AgentTree } from "@/lib/types";
 
 const mockTrees: AgentTree[] = [
@@ -125,27 +126,30 @@ describe("WizardPage", () => {
     });
   });
 
-  it("shows detected count header", async () => {
+  it("shows installed CLI count header", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Detected (3)")).toBeInTheDocument();
+      expect(screen.getByText("Installed CLI (3)")).toBeInTheDocument();
     });
   });
 
-  it("all selectable paths are selected by default", async () => {
+  it("smart default selection: important items selected, others not", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      // Visible checkboxes (collapsible closed):
-      // Claude: 1 parent + 1 sibling (.claude.json) = 2
-      // OpenCode: 1 parent = 1
-      // Aider: 1 file = 1
-      // Total visible = 4
+      // Visible checkboxes when collapsed:
+      // Claude Code: 1 parent (indeterminate — settings.json selected, projects not)
+      // OpenCode: 1 parent (checked — opencode.json selected)
+      // Aider: 1 file (checked)
+      // Total visible = 3
       const checkboxes = screen.getAllByRole("checkbox");
-      expect(checkboxes).toHaveLength(4);
-      checkboxes.forEach((cb) => expect(cb).toBeChecked());
+      expect(checkboxes).toHaveLength(3);
     });
+
+    // Smart defaults: 4 of 5 selectable paths are selected
+    // (projects not selected, settings.json + .claude.json + opencode.json + aider = 4)
+    expect(screen.getByText("Add 4 to Sync List")).toBeInTheDocument();
   });
 
   it("toggles individual child selection", async () => {
@@ -166,35 +170,63 @@ describe("WizardPage", () => {
       expect(screen.getByText("projects")).toBeInTheDocument();
     });
 
-    // Find the "projects" checkbox — it's a child of Claude Code
-    const projectsLabel = screen.getByText("projects");
-    const checkbox = projectsLabel
+    // Find the "settings.json" checkbox — it's a child of Claude Code, selected by default
+    const settingsLabel = screen.getByText("settings.json");
+    const checkbox = settingsLabel
       .closest("label")!
       .querySelector("input[type='checkbox']") as HTMLInputElement;
 
+    expect(checkbox).toBeChecked();
     fireEvent.click(checkbox);
     expect(checkbox).not.toBeChecked();
   });
 
-  it("shows correct add button text with count", async () => {
+  it("shows correct add button text with smart default count", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      // Claude: 2 children + 1 sibling = 3
-      // OpenCode: 1 child = 1
-      // Aider: 1 file = 1
-      // Total = 5 selectable paths
-      expect(screen.getByText("Add 5 to Sync List")).toBeInTheDocument();
+      // Smart defaults: settings.json + .claude.json + opencode.json + aider = 4
+      // (projects is NOT default-selected for Claude Code)
+      expect(screen.getByText("Add 4 to Sync List")).toBeInTheDocument();
     });
   });
 
-  it("updates add button count when child is deselected", async () => {
+  it("updates add button count when child is toggled", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Add 5 to Sync List")).toBeInTheDocument();
+      expect(screen.getByText("Add 4 to Sync List")).toBeInTheDocument();
     });
 
+    // Expand Claude Code collapsible
+    const claudeRow = screen.getByText("Claude Code").closest("div")!;
+    const expandBtn = claudeRow
+      .closest("[data-state]")!
+      .querySelector("button");
+    fireEvent.click(expandBtn!);
+
+    await waitFor(() => {
+      expect(screen.getByText("settings.json")).toBeInTheDocument();
+    });
+
+    // Deselect settings.json
+    const settingsLabel = screen.getByText("settings.json");
+    const checkbox = settingsLabel
+      .closest("label")!
+      .querySelector("input[type='checkbox']") as HTMLInputElement;
+    fireEvent.click(checkbox);
+
+    expect(screen.getByText("Add 3 to Sync List")).toBeInTheDocument();
+  });
+
+  it("calls addEntry for selected paths with smart folding", async () => {
+    render(<WizardPage {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Add 4 to Sync List")).toBeInTheDocument();
+    });
+
+    // Select "projects" too so all children are selected → triggers folding
     // Expand Claude Code collapsible
     const claudeRow = screen.getByText("Claude Code").closest("div")!;
     const expandBtn = claudeRow
@@ -206,21 +238,15 @@ describe("WizardPage", () => {
       expect(screen.getByText("projects")).toBeInTheDocument();
     });
 
+    // Select projects (it's NOT selected by default)
     const projectsLabel = screen.getByText("projects");
-    const checkbox = projectsLabel
+    const projectsCheckbox = projectsLabel
       .closest("label")!
       .querySelector("input[type='checkbox']") as HTMLInputElement;
-    fireEvent.click(checkbox);
+    fireEvent.click(projectsCheckbox);
 
-    expect(screen.getByText("Add 4 to Sync List")).toBeInTheDocument();
-  });
-
-  it("calls addEntry for selected paths", async () => {
-    render(<WizardPage {...defaultProps} />);
-
-    await waitFor(() => {
-      expect(screen.getByText("Add 5 to Sync List")).toBeInTheDocument();
-    });
+    // Now all 5 are selected
+    expect(screen.getByText("Add 5 to Sync List")).toBeInTheDocument();
 
     fireEvent.click(screen.getByText("Add 5 to Sync List"));
 
@@ -244,26 +270,9 @@ describe("WizardPage", () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Claude Code")).toBeInTheDocument();
+      // Default: settings.json selected, projects NOT selected → not all children
+      expect(screen.getByText("Add 4 to Sync List")).toBeInTheDocument();
     });
-
-    // Expand Claude Code collapsible
-    const claudeRow = screen.getByText("Claude Code").closest("div")!;
-    const expandBtn = claudeRow
-      .closest("[data-state]")!
-      .querySelector("button");
-    fireEvent.click(expandBtn!);
-
-    await waitFor(() => {
-      expect(screen.getByText("projects")).toBeInTheDocument();
-    });
-
-    // Deselect "projects" child of Claude Code
-    const projectsLabel = screen.getByText("projects");
-    const checkbox = projectsLabel
-      .closest("label")!
-      .querySelector("input[type='checkbox']") as HTMLInputElement;
-    fireEvent.click(checkbox);
 
     fireEvent.click(screen.getByText("Add 4 to Sync List"));
 
@@ -283,9 +292,29 @@ describe("WizardPage", () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Add 5 to Sync List")).toBeInTheDocument();
+      expect(screen.getByText("Claude Code")).toBeInTheDocument();
     });
 
+    // First, select all items (including projects which is not default-selected)
+    // Expand Claude Code collapsible
+    const claudeRow = screen.getByText("Claude Code").closest("div")!;
+    const expandBtn = claudeRow
+      .closest("[data-state]")!
+      .querySelector("button");
+    fireEvent.click(expandBtn!);
+
+    await waitFor(() => {
+      expect(screen.getByText("projects")).toBeInTheDocument();
+    });
+
+    // Select projects
+    const projectsLabel = screen.getByText("projects");
+    const projectsCheckbox = projectsLabel
+      .closest("label")!
+      .querySelector("input[type='checkbox']") as HTMLInputElement;
+    fireEvent.click(projectsCheckbox);
+
+    expect(screen.getByText("Add 5 to Sync List")).toBeInTheDocument();
     fireEvent.click(screen.getByText("Add 5 to Sync List"));
 
     await waitFor(() => {
@@ -297,8 +326,25 @@ describe("WizardPage", () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Add 5 to Sync List")).toBeInTheDocument();
+      expect(screen.getByText("Claude Code")).toBeInTheDocument();
     });
+
+    // Select all (including projects)
+    const claudeRow = screen.getByText("Claude Code").closest("div")!;
+    const expandBtn = claudeRow
+      .closest("[data-state]")!
+      .querySelector("button");
+    fireEvent.click(expandBtn!);
+
+    await waitFor(() => {
+      expect(screen.getByText("projects")).toBeInTheDocument();
+    });
+
+    const projectsLabel = screen.getByText("projects");
+    const projectsCheckbox = projectsLabel
+      .closest("label")!
+      .querySelector("input[type='checkbox']") as HTMLInputElement;
+    fireEvent.click(projectsCheckbox);
 
     fireEvent.click(screen.getByText("Add 5 to Sync List"));
 
@@ -332,10 +378,20 @@ describe("WizardPage", () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Add 5 to Sync List")).toBeInTheDocument();
+      expect(screen.getByText("Add 4 to Sync List")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText("Add 5 to Sync List"));
+    fireEvent.click(screen.getByText("Add 4 to Sync List"));
+
+    // The first path to fail is settings.json (inside collapsible)
+    // Need to expand Claude Code collapsible to see the error
+    await waitFor(() => {
+      const claudeRow = screen.getByText("Claude Code").closest("div")!;
+      const expandBtn = claudeRow
+        .closest("[data-state]")!
+        .querySelector("button");
+      fireEvent.click(expandBtn!);
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Permission denied")).toBeInTheDocument();
@@ -346,11 +402,13 @@ describe("WizardPage", () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      // 4 visible checkboxes (collapsibles closed)
-      expect(screen.getAllByRole("checkbox")).toHaveLength(4);
+      // 3 visible checkboxes (collapsibles closed)
+      expect(screen.getAllByRole("checkbox")).toHaveLength(3);
     });
 
-    // Click Deselect all
+    // With smart defaults, starts with "Select all" (not all selected)
+    // First select all, then deselect all
+    fireEvent.click(screen.getByText("Select all"));
     fireEvent.click(screen.getByText("Deselect all"));
 
     expect(screen.getByText("Add 0 to Sync List")).toBeInTheDocument();
@@ -376,23 +434,30 @@ describe("WizardPage", () => {
     expect(preventDefault).toHaveBeenCalled();
   });
 
-  it("shows Deselect all when all are selected", async () => {
+  it("shows Deselect all when smart defaults are not all selected", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Deselect all")).toBeInTheDocument();
+      // Not all items are selected (projects is deselected), so shows "Select all"
+      // Wait, let me check: allSelected checks if every path is selected or added
+      // projects is NOT selected → allSelected = false → shows "Select all"
+      expect(screen.getByText("Select all")).toBeInTheDocument();
     });
   });
 
-  it("toggles to Select all when deselect all is clicked", async () => {
+  it("toggles between Select all and Deselect all", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Deselect all")).toBeInTheDocument();
+      expect(screen.getByText("Select all")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText("Deselect all"));
+    // Click Select all to select everything
+    fireEvent.click(screen.getByText("Select all"));
+    expect(screen.getByText("Deselect all")).toBeInTheDocument();
 
+    // Click Deselect all
+    fireEvent.click(screen.getByText("Deselect all"));
     expect(screen.getByText("Select all")).toBeInTheDocument();
   });
 
@@ -410,25 +475,32 @@ describe("WizardPage", () => {
     });
   });
 
-  it("shows sibling files", async () => {
+  it("shows sibling files inside collapsible as peers", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText(".claude.json")).toBeInTheDocument();
+      expect(screen.getByText("Claude Code")).toBeInTheDocument();
     });
-  });
 
-  it("shows child items for directory agents", async () => {
-    render(<WizardPage {...defaultProps} />);
+    // Siblings are now inside the collapsible, not visible by default
+    expect(screen.queryByText(".claude.json")).not.toBeInTheDocument();
+
+    // Expand Claude Code collapsible
+    const claudeRow = screen.getByText("Claude Code").closest("div")!;
+    const expandBtn = claudeRow
+      .closest("[data-state]")!
+      .querySelector("button");
+    fireEvent.click(expandBtn!);
 
     await waitFor(() => {
-      // Children are inside collapsible — should not be visible by default
-      // but siblings labeled "Related files" should be visible
+      // Now siblings appear as peers alongside children
       expect(screen.getByText(".claude.json")).toBeInTheDocument();
+      expect(screen.getByText("projects")).toBeInTheDocument();
+      expect(screen.getByText("settings.json")).toBeInTheDocument();
     });
   });
 
-  it("expands collapsible to show children", async () => {
+  it("expands collapsible to show children and siblings", async () => {
     render(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
@@ -447,6 +519,7 @@ describe("WizardPage", () => {
     await waitFor(() => {
       expect(screen.getByText("projects")).toBeInTheDocument();
       expect(screen.getByText("settings.json")).toBeInTheDocument();
+      expect(screen.getByText(".claude.json")).toBeInTheDocument();
     });
   });
 
@@ -494,7 +567,8 @@ describe("WizardPage", () => {
       .closest("[data-state]")!
       .querySelector("input[type='checkbox']") as HTMLInputElement;
 
-    // Deselect all children by clicking parent
+    // Claude parent is indeterminate (settings.json selected, projects not)
+    // Clicking indeterminate → deselects all
     fireEvent.click(parentCheckbox);
     expect(parentCheckbox).not.toBeChecked();
 
@@ -513,5 +587,67 @@ describe("WizardPage", () => {
         screen.getByText("/Users/test/.aider.conf.yml")
       ).toBeInTheDocument();
     });
+  });
+});
+
+describe("shouldDefaultSelect", () => {
+  it("selects important Claude Code children", () => {
+    expect(shouldDefaultSelect("Claude Code", "settings.json")).toBe(true);
+    expect(shouldDefaultSelect("Claude Code", "commands")).toBe(true);
+    expect(shouldDefaultSelect("Claude Code", "skills")).toBe(true);
+    expect(shouldDefaultSelect("Claude Code", "CLAUDE.md")).toBe(true);
+    expect(shouldDefaultSelect("Claude Code", "plugins")).toBe(true);
+  });
+
+  it("skips unimportant Claude Code children", () => {
+    expect(shouldDefaultSelect("Claude Code", "projects")).toBe(false);
+    expect(shouldDefaultSelect("Claude Code", "transcripts")).toBe(false);
+    expect(shouldDefaultSelect("Claude Code", "debug")).toBe(false);
+    expect(shouldDefaultSelect("Claude Code", "telemetry")).toBe(false);
+  });
+
+  it("selects important OpenCode children", () => {
+    expect(shouldDefaultSelect("OpenCode", "opencode.json")).toBe(true);
+    expect(shouldDefaultSelect("OpenCode", "commands")).toBe(true);
+    expect(shouldDefaultSelect("OpenCode", "skills")).toBe(true);
+    expect(shouldDefaultSelect("OpenCode", "plugin")).toBe(true);
+    expect(shouldDefaultSelect("OpenCode", "agents")).toBe(true);
+    expect(shouldDefaultSelect("OpenCode", "modes")).toBe(true);
+    expect(shouldDefaultSelect("OpenCode", "tools")).toBe(true);
+    expect(shouldDefaultSelect("OpenCode", "themes")).toBe(true);
+  });
+
+  it("skips OpenCode node_modules via skip patterns", () => {
+    expect(shouldDefaultSelect("OpenCode", "node_modules")).toBe(false);
+  });
+
+  it("selects important Cursor children", () => {
+    expect(shouldDefaultSelect("Cursor", "rules")).toBe(true);
+    expect(shouldDefaultSelect("Cursor", "commands")).toBe(true);
+    expect(shouldDefaultSelect("Cursor", "cli-config.json")).toBe(true);
+  });
+
+  it("skips Cursor extensions", () => {
+    expect(shouldDefaultSelect("Cursor", "extensions")).toBe(false);
+  });
+
+  it("applies universal skip patterns", () => {
+    expect(shouldDefaultSelect("Windsurf", "package-lock.json")).toBe(false);
+    expect(shouldDefaultSelect("Windsurf", "bun.lock")).toBe(false);
+    expect(shouldDefaultSelect("Windsurf", "node_modules")).toBe(false);
+    expect(shouldDefaultSelect("Windsurf", "stats-cache.json")).toBe(false);
+    expect(shouldDefaultSelect("Windsurf", "paste-cache")).toBe(false);
+    expect(shouldDefaultSelect("Windsurf", "Cache")).toBe(false);
+  });
+
+  it("selects all children for agents without explicit important list", () => {
+    // Windsurf has no IMPORTANT_CHILDREN entry → all selected by default
+    expect(shouldDefaultSelect("Windsurf", "mcp_config.json")).toBe(true);
+    expect(shouldDefaultSelect("Windsurf", "config.json")).toBe(true);
+  });
+
+  it("skip patterns take precedence over important list", () => {
+    // Even if "cache" were in the important list, skip patterns would reject it
+    expect(shouldDefaultSelect("Claude Code", "stats-cache.json")).toBe(false);
   });
 });

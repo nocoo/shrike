@@ -33,6 +33,78 @@ type AddedMap = Record<string, boolean>;
 type ErrorMap = Record<string, string>;
 
 /**
+ * Important children per agent that should be selected by default.
+ * Children NOT in this list will be deselected by default.
+ * Agents not listed here default to selecting ALL children.
+ */
+const IMPORTANT_CHILDREN: Record<string, string[]> = {
+  "Claude Code": [
+    "settings.json",
+    "commands",
+    "skills",
+    "CLAUDE.md",
+    "plugins",
+  ],
+  Cursor: ["rules", "commands", "cli-config.json"],
+  OpenCode: [
+    "opencode.json",
+    "commands",
+    "skills",
+    "plugin",
+    "agents",
+    "modes",
+    "tools",
+    "themes",
+  ],
+  // Aider: single file agent — always selected
+  // Windsurf: select all by default (no filter defined)
+};
+
+/**
+ * Patterns for children that should never be selected by default.
+ * Checked against the child name (not full path).
+ */
+const SKIP_PATTERNS = [
+  /[-.]lock(\.|\b)/,
+  /^node_modules$/,
+  /cache/i,
+  /^transcripts$/,
+  /^debug$/,
+  /^telemetry$/,
+  /^statsig$/,
+  /^logs$/,
+  /^Session Storage$/,
+];
+
+/**
+ * Determine whether a child should be selected by default.
+ * Returns true if the child is important for backup.
+ */
+export function shouldDefaultSelect(agentName: string, childName: string): boolean {
+  // Always skip items matching universal skip patterns
+  if (SKIP_PATTERNS.some((pattern) => pattern.test(childName))) {
+    return false;
+  }
+
+  // If this agent has an explicit important list, only select those
+  const importantList = IMPORTANT_CHILDREN[agentName];
+  if (importantList) {
+    return importantList.includes(childName);
+  }
+
+  // No explicit list → select by default (e.g. Windsurf, VS Code)
+  return true;
+}
+
+/**
+ * Get all items for an agent as a flat list (children + siblings as peers).
+ * This is the unified view — siblings are treated as first-class items.
+ */
+function getAllItems(tree: AgentTree): TreeChild[] {
+  return [...tree.children, ...tree.siblings];
+}
+
+/**
  * Collect all selectable paths from an agent tree.
  * For directory agents: children + siblings are selectable.
  * For file agents: the main path itself + siblings.
@@ -43,10 +115,7 @@ function getSelectablePaths(tree: AgentTree): string[] {
   if (tree.item_type === "file") {
     return [tree.path, ...tree.siblings.map((s) => s.path)];
   }
-  return [
-    ...tree.children.map((c) => c.path),
-    ...tree.siblings.map((s) => s.path),
-  ];
+  return getAllItems(tree).map((item) => item.path);
 }
 
 /**
@@ -172,11 +241,25 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
       const detected = await scanCodingConfigsTree();
       setTrees(detected);
 
-      // Pre-select all selectable paths
+      // Smart default selection: only pre-select important items
       const sel: SelectionMap = {};
       for (const tree of detected) {
-        for (const p of getSelectablePaths(tree)) {
-          sel[p] = true;
+        if (tree.item_type === "file") {
+          // File agents (e.g. Aider): always selected
+          sel[tree.path] = true;
+          // Siblings of file agents: check importance
+          for (const sibling of tree.siblings) {
+            sel[sibling.path] = shouldDefaultSelect(tree.agent, sibling.name);
+          }
+        } else {
+          // Directory agents: check each child and sibling
+          for (const child of tree.children) {
+            sel[child.path] = shouldDefaultSelect(tree.agent, child.name);
+          }
+          // Siblings are always important (e.g. .claude.json)
+          for (const sibling of tree.siblings) {
+            sel[sibling.path] = true;
+          }
         }
       }
       setSelection(sel);
@@ -323,8 +406,9 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
   };
 
   const renderAgentTree = (tree: AgentTree) => {
+    const allItems = getAllItems(tree);
     const hasExpandableContent =
-      tree.item_type === "directory" && tree.children.length > 0;
+      tree.item_type === "directory" && allItems.length > 0;
     const parentState = getParentState(tree, selection, added);
 
     // For file-type agents (like Aider), render a simple row
@@ -363,7 +447,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
               )}
             </div>
           </label>
-          {/* Siblings for file agents */}
+          {/* Siblings for file agents — shown as peers */}
           {tree.siblings.length > 0 && (
             <div className="border-t border-border/50 px-3 pb-2 pl-9">
               {tree.siblings.map(renderChildRow)}
@@ -373,7 +457,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
       );
     }
 
-    // Directory agent — collapsible tree
+    // Directory agent — collapsible tree with children + siblings as peers
     return (
       <CollapsiblePrimitive.Root
         key={tree.path}
@@ -418,21 +502,11 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
           )}
         </div>
 
-        {/* Expandable children */}
+        {/* Expandable items: children + siblings as flat peers */}
         {hasExpandableContent && (
           <CollapsiblePrimitive.Content className="border-t border-border/50 px-3 pb-2 pl-9">
-            {tree.children.map(renderChildRow)}
+            {allItems.map(renderChildRow)}
           </CollapsiblePrimitive.Content>
-        )}
-
-        {/* Siblings always visible below the agent */}
-        {tree.siblings.length > 0 && (
-          <div className="border-t border-border/50 px-3 pb-2 pl-9">
-            <p className="mb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
-              Related files
-            </p>
-            {tree.siblings.map(renderChildRow)}
-          </div>
         )}
       </CollapsiblePrimitive.Root>
     );
@@ -493,7 +567,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Detected ({trees.length})
+                Installed CLI ({trees.length})
               </h2>
               <Button
                 variant="ghost"
