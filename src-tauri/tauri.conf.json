@@ -14,6 +14,8 @@
     "windows": [
       {
         "title": "Shrike",
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
         "width": 380,
         "height": 680,
         "minWidth": 320,

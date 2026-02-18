@@ -12,8 +12,11 @@ interface ToolbarProps {
 
 export function Toolbar({ entryCount, onAdd }: ToolbarProps) {
   return (
-    <div className="flex items-center justify-between border-b px-4 py-3">
-      <div className="flex items-center gap-2">
+    <div
+      data-tauri-drag-region
+      className="flex items-center justify-between border-b py-3 pr-4 pl-[70px]"
+    >
+      <div className="flex items-center gap-2" data-tauri-drag-region>
         <Image
           src="/logo-64.png"
           alt="Shrike"

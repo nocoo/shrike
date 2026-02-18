@@ -63,4 +63,16 @@ describe("Toolbar", () => {
     render(<Toolbar entryCount={0} onAdd={() => {}} />);
     expect(screen.getByTestId("settings-dialog")).toBeInTheDocument();
   });
+
+  it("has data-tauri-drag-region for window dragging", () => {
+    const { container } = render(<Toolbar entryCount={0} onAdd={() => {}} />);
+    const dragRegions = container.querySelectorAll("[data-tauri-drag-region]");
+    expect(dragRegions.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("has left padding for macOS traffic light buttons", () => {
+    const { container } = render(<Toolbar entryCount={0} onAdd={() => {}} />);
+    const toolbar = container.firstElementChild as HTMLElement;
+    expect(toolbar.className).toContain("pl-[70px]");
+  });
 });
