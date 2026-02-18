@@ -4,7 +4,7 @@
  */
 
 import { invoke } from "@tauri-apps/api/core";
-import type { AppSettings, BackupEntry, SyncResult } from "./types";
+import type { AppSettings, BackupEntry, DetectedConfig, SyncResult } from "./types";
 
 export async function addEntry(path: string): Promise<BackupEntry> {
   return invoke<BackupEntry>("add_entry", { path });
@@ -42,4 +42,8 @@ export async function setAutostart(enabled: boolean): Promise<void> {
 
 export async function setTrayVisible(visible: boolean): Promise<void> {
   return invoke<void>("set_tray_visible", { visible });
+}
+
+export async function scanCodingConfigs(): Promise<DetectedConfig[]> {
+  return invoke<DetectedConfig[]>("scan_coding_configs");
 }

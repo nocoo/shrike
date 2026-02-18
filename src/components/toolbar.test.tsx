@@ -17,6 +17,7 @@ describe("Toolbar", () => {
   const defaultProps = {
     entryCount: 0,
     onAdd: () => {},
+    onWizard: () => {},
     onSettings: () => {},
   };
 
@@ -57,13 +58,24 @@ describe("Toolbar", () => {
     expect(onAdd).toHaveBeenCalledOnce();
   });
 
+  it("calls onWizard when wizard button is clicked", () => {
+    const onWizard = vi.fn();
+    render(<Toolbar {...defaultProps} onWizard={onWizard} />);
+
+    const buttons = screen.getAllByRole("button");
+    // Wizard button is the second button (Plus=0, Wand2=1, Settings=2)
+    fireEvent.click(buttons[1]);
+
+    expect(onWizard).toHaveBeenCalledOnce();
+  });
+
   it("calls onSettings when settings button is clicked", () => {
     const onSettings = vi.fn();
     render(<Toolbar {...defaultProps} onSettings={onSettings} />);
 
     const buttons = screen.getAllByRole("button");
-    // Settings button is the second button
-    fireEvent.click(buttons[1]);
+    // Settings button is the third button (Plus=0, Wand2=1, Settings=2)
+    fireEvent.click(buttons[2]);
 
     expect(onSettings).toHaveBeenCalledOnce();
   });

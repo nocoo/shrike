@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use crate::error::{Result, ShrikeError};
 use crate::sync;
-use crate::types::{AppSettings, BackupEntry, ItemType, SyncResult};
+use crate::types::{AppSettings, BackupEntry, DetectedConfig, ItemType, SyncResult};
 
 const STORE_FILE: &str = "shrike_data.json";
 const ITEMS_KEY: &str = "items";
@@ -199,6 +199,13 @@ pub fn set_tray_visible(app: AppHandle, visible: bool) -> Result<()> {
     settings.show_tray_icon = visible;
     update_settings(app, settings)?;
     Ok(())
+}
+
+/// Scan the user's home directory for known coding agent configurations.
+#[tauri::command]
+pub fn scan_coding_configs() -> Result<Vec<DetectedConfig>> {
+    let home = dirs::home_dir().ok_or_else(|| ShrikeError::PathNotFound("~".to_string()))?;
+    Ok(crate::types::scan_coding_configs(&home))
 }
 
 #[cfg(test)]

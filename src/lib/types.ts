@@ -32,3 +32,9 @@ export interface SyncResult {
 }
 
 export type SyncStatus = "idle" | "running";
+
+export interface DetectedConfig {
+  agent: string;
+  path: string;
+  item_type: ItemType;
+}

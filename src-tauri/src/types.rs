@@ -165,6 +165,62 @@ pub enum SyncStatus {
     Running,
 }
 
+/// A detected coding agent configuration.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DetectedConfig {
+    /// Display name of the coding agent (e.g. "Claude Code")
+    pub agent: String,
+    /// Absolute path to the config directory or file
+    pub path: String,
+    /// Whether this is a directory or single file
+    pub item_type: ItemType,
+}
+
+/// Known coding agent configuration locations (macOS).
+///
+/// Each tuple: (agent_name, relative_path_from_home, is_directory).
+const KNOWN_AGENT_CONFIGS: &[(&str, &str, bool)] = &[
+    // Claude Code
+    ("Claude Code", ".claude", true),
+    // Cursor
+    ("Cursor", ".cursor", true),
+    // OpenCode
+    ("OpenCode", ".config/opencode", true),
+    // Windsurf
+    ("Windsurf", ".windsurf", true),
+    // GitHub Copilot
+    ("GitHub Copilot", ".config/github-copilot", true),
+    // Aider
+    ("Aider", ".aider.conf.yml", false),
+    // VS Code
+    ("VS Code", "Library/Application Support/Code/User", true),
+];
+
+/// Scan the user's home directory for known coding agent configurations.
+///
+/// Returns a list of detected configs that actually exist on disk.
+pub fn scan_coding_configs(home_dir: &Path) -> Vec<DetectedConfig> {
+    KNOWN_AGENT_CONFIGS
+        .iter()
+        .filter_map(|(agent, rel_path, is_dir)| {
+            let full_path = home_dir.join(rel_path);
+            if full_path.exists() {
+                Some(DetectedConfig {
+                    agent: (*agent).to_string(),
+                    path: full_path.to_string_lossy().to_string(),
+                    item_type: if *is_dir {
+                        ItemType::Directory
+                    } else {
+                        ItemType::File
+                    },
+                })
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -389,5 +445,80 @@ mod tests {
         assert_eq!(settings, deserialized);
         assert!(!deserialized.show_tray_icon);
         assert!(deserialized.autostart);
+    }
+
+    // --- scan_coding_configs ---
+
+    #[test]
+    fn scan_coding_configs_empty_home() {
+        let dir = tempfile::tempdir().unwrap();
+        let results = scan_coding_configs(dir.path());
+        assert!(results.is_empty());
+    }
+
+    #[test]
+    fn scan_coding_configs_finds_claude() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join(".claude")).unwrap();
+        let results = scan_coding_configs(dir.path());
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].agent, "Claude Code");
+        assert_eq!(results[0].item_type, ItemType::Directory);
+        assert!(results[0].path.ends_with(".claude"));
+    }
+
+    #[test]
+    fn scan_coding_configs_finds_cursor() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join(".cursor")).unwrap();
+        let results = scan_coding_configs(dir.path());
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].agent, "Cursor");
+    }
+
+    #[test]
+    fn scan_coding_configs_finds_aider_file() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join(".aider.conf.yml"), "model: gpt-4").unwrap();
+        let results = scan_coding_configs(dir.path());
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].agent, "Aider");
+        assert_eq!(results[0].item_type, ItemType::File);
+    }
+
+    #[test]
+    fn scan_coding_configs_finds_multiple() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join(".claude")).unwrap();
+        std::fs::create_dir_all(dir.path().join(".cursor")).unwrap();
+        std::fs::create_dir_all(dir.path().join(".config/opencode")).unwrap();
+        let results = scan_coding_configs(dir.path());
+        assert_eq!(results.len(), 3);
+        let agents: Vec<&str> = results.iter().map(|c| c.agent.as_str()).collect();
+        assert!(agents.contains(&"Claude Code"));
+        assert!(agents.contains(&"Cursor"));
+        assert!(agents.contains(&"OpenCode"));
+    }
+
+    #[test]
+    fn scan_coding_configs_skips_nonexistent() {
+        let dir = tempfile::tempdir().unwrap();
+        // Only create one, others should be skipped
+        std::fs::create_dir_all(dir.path().join(".claude")).unwrap();
+        let results = scan_coding_configs(dir.path());
+        assert_eq!(results.len(), 1);
+    }
+
+    #[test]
+    fn scan_coding_configs_serializes() {
+        let config = DetectedConfig {
+            agent: "Claude Code".into(),
+            path: "/Users/test/.claude".into(),
+            item_type: ItemType::Directory,
+        };
+        let json = serde_json::to_value(&config).unwrap();
+        assert_eq!(json["agent"], "Claude Code");
+        assert_eq!(json["path"], "/Users/test/.claude");
+        assert_eq!(json["item_type"], "directory");
     }
 }

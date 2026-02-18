@@ -7,10 +7,11 @@ import { SettingsPage } from "@/components/settings-page";
 import { SyncButton } from "@/components/sync-button";
 import { SyncLog } from "@/components/sync-log";
 import { Toolbar } from "@/components/toolbar";
+import { WizardPage } from "@/components/wizard-page";
 import { useFileList } from "@/hooks/use-file-list";
 import { useSync } from "@/hooks/use-sync";
 
-type Page = "home" | "settings";
+type Page = "home" | "settings" | "wizard";
 
 export default function Home() {
   const [page, setPage] = useState<Page>("home");
@@ -31,6 +32,18 @@ export default function Home() {
     return <SettingsPage onBack={() => setPage("home")} />;
   }
 
+  if (page === "wizard") {
+    return (
+      <WizardPage
+        onBack={() => setPage("home")}
+        onDone={() => {
+          refresh();
+          setPage("home");
+        }}
+      />
+    );
+  }
+
   if (loading) {
     return (
       <main className="flex h-screen items-center justify-center">
@@ -44,6 +57,7 @@ export default function Home() {
       <Toolbar
         entryCount={entries.length}
         onAdd={addViaDialog}
+        onWizard={() => setPage("wizard")}
         onSettings={() => setPage("settings")}
       />
 

@@ -32,6 +32,7 @@ pub fn run() {
             commands::get_autostart,
             commands::set_autostart,
             commands::set_tray_visible,
+            commands::scan_coding_configs,
         ])
         .setup(|app| {
             // Load settings
