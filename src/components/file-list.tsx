@@ -4,6 +4,7 @@ import { X, File, Folder } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useLocale } from "@/lib/i18n";
 import type { BackupEntry } from "@/lib/types";
 
 interface FileListProps {
@@ -95,6 +96,8 @@ export function groupEntries(entries: BackupEntry[]): EntryGroup[] {
 }
 
 export function FileList({ entries, onRemove }: FileListProps) {
+  const { t } = useLocale();
+
   if (entries.length === 0) return null;
 
   const groups = groupEntries(entries);
@@ -108,7 +111,7 @@ export function FileList({ entries, onRemove }: FileListProps) {
             {groups.length > 1 && (
               <div className="sticky top-0 z-10 bg-muted/80 px-4 py-1.5 backdrop-blur-sm">
                 <span className="text-xs font-medium text-muted-foreground">
-                  {group.key === "/" ? "Other" : group.key}
+                  {group.key === "/" ? t("fileList.other") : group.key}
                 </span>
               </div>
             )}

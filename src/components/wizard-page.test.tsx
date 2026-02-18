@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { renderWithLocale } from "@/test/test-utils";
 
 // Mock Tauri commands
 const mockScanCodingConfigsTree = vi.fn();
@@ -83,13 +84,13 @@ describe("WizardPage", () => {
   });
 
   it("renders AI CLI Backup title", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
     expect(screen.getByText("AI CLI Backup")).toBeInTheDocument();
   });
 
   it("shows scanning state initially", async () => {
     mockScanCodingConfigsTree.mockReturnValue(new Promise(() => {}));
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     expect(
       screen.getByText("Scanning for AI CLI configs...")
@@ -97,7 +98,7 @@ describe("WizardPage", () => {
   });
 
   it("displays detected agents after scan", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Claude Code")).toBeInTheDocument();
@@ -108,7 +109,7 @@ describe("WizardPage", () => {
 
   it("shows empty state when no configs found", async () => {
     mockScanCodingConfigsTree.mockResolvedValue([]);
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(
@@ -119,7 +120,7 @@ describe("WizardPage", () => {
 
   it("shows Scan Again button when no configs found", async () => {
     mockScanCodingConfigsTree.mockResolvedValue([]);
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Scan Again")).toBeInTheDocument();
@@ -127,7 +128,7 @@ describe("WizardPage", () => {
   });
 
   it("shows installed CLI count header", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Installed CLI (3)")).toBeInTheDocument();
@@ -135,7 +136,7 @@ describe("WizardPage", () => {
   });
 
   it("smart default selection: important items selected, others not", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       // Visible checkboxes when collapsed:
@@ -153,7 +154,7 @@ describe("WizardPage", () => {
   });
 
   it("toggles individual child selection", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Claude Code")).toBeInTheDocument();
@@ -182,7 +183,7 @@ describe("WizardPage", () => {
   });
 
   it("shows correct add button text with smart default count", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       // Smart defaults: settings.json + .claude.json + opencode.json + aider = 4
@@ -192,7 +193,7 @@ describe("WizardPage", () => {
   });
 
   it("updates add button count when child is toggled", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Add 4 to Sync List")).toBeInTheDocument();
@@ -220,7 +221,7 @@ describe("WizardPage", () => {
   });
 
   it("calls addEntry for selected paths with smart folding", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Add 4 to Sync List")).toBeInTheDocument();
@@ -267,7 +268,7 @@ describe("WizardPage", () => {
   });
 
   it("adds individual children when not all selected", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       // Default: settings.json selected, projects NOT selected → not all children
@@ -289,7 +290,7 @@ describe("WizardPage", () => {
   });
 
   it("shows Done button after all items are added", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Claude Code")).toBeInTheDocument();
@@ -323,7 +324,7 @@ describe("WizardPage", () => {
   });
 
   it("calls onDone when Done button is clicked", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Claude Code")).toBeInTheDocument();
@@ -357,7 +358,7 @@ describe("WizardPage", () => {
   });
 
   it("calls onBack when back button is clicked", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     const buttons = screen.getAllByRole("button");
     fireEvent.click(buttons[0]);
@@ -375,7 +376,7 @@ describe("WizardPage", () => {
       last_synced: null,
     });
 
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Add 4 to Sync List")).toBeInTheDocument();
@@ -399,7 +400,7 @@ describe("WizardPage", () => {
   });
 
   it("disables add button when no items selected", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       // 3 visible checkboxes (collapsibles closed)
@@ -418,7 +419,7 @@ describe("WizardPage", () => {
   });
 
   it("has drag region header for window dragging", async () => {
-    const { container } = render(<WizardPage {...defaultProps} />);
+    const { container } = renderWithLocale(<WizardPage {...defaultProps} />);
     const dragRegions = container.querySelectorAll(
       "[data-tauri-drag-region]"
     );
@@ -426,7 +427,7 @@ describe("WizardPage", () => {
   });
 
   it("prevents context menu", async () => {
-    const { container } = render(<WizardPage {...defaultProps} />);
+    const { container } = renderWithLocale(<WizardPage {...defaultProps} />);
     const mainDiv = container.firstElementChild as HTMLElement;
     const event = new MouseEvent("contextmenu", { bubbles: true });
     const preventDefault = vi.spyOn(event, "preventDefault");
@@ -435,7 +436,7 @@ describe("WizardPage", () => {
   });
 
   it("shows Deselect all when smart defaults are not all selected", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       // Not all items are selected (projects is deselected), so shows "Select all"
@@ -446,7 +447,7 @@ describe("WizardPage", () => {
   });
 
   it("toggles between Select all and Deselect all", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Select all")).toBeInTheDocument();
@@ -462,7 +463,7 @@ describe("WizardPage", () => {
   });
 
   it("shows agent paths", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("/Users/test/.claude")).toBeInTheDocument();
@@ -476,7 +477,7 @@ describe("WizardPage", () => {
   });
 
   it("shows sibling files inside collapsible as peers", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Claude Code")).toBeInTheDocument();
@@ -501,7 +502,7 @@ describe("WizardPage", () => {
   });
 
   it("expands collapsible to show children and siblings", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Claude Code")).toBeInTheDocument();
@@ -525,7 +526,7 @@ describe("WizardPage", () => {
 
   it("handles scan failure gracefully", async () => {
     mockScanCodingConfigsTree.mockRejectedValue(new Error("Scan error"));
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(
@@ -536,7 +537,7 @@ describe("WizardPage", () => {
 
   it("re-scans when Scan Again is clicked", async () => {
     mockScanCodingConfigsTree.mockResolvedValueOnce([]);
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Scan Again")).toBeInTheDocument();
@@ -555,7 +556,7 @@ describe("WizardPage", () => {
   });
 
   it("toggles agent parent checkbox to select/deselect all children", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText("Claude Code")).toBeInTheDocument();
@@ -578,7 +579,7 @@ describe("WizardPage", () => {
   });
 
   it("shows file icon for file-type agents", async () => {
-    render(<WizardPage {...defaultProps} />);
+    renderWithLocale(<WizardPage {...defaultProps} />);
 
     await waitFor(() => {
       // Aider is a file-type agent, should be in the document

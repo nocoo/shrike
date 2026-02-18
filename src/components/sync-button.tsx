@@ -2,6 +2,7 @@
 
 import { Loader2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLocale } from "@/lib/i18n";
 import type { SyncStatus } from "@/lib/types";
 
 interface SyncButtonProps {
@@ -11,6 +12,7 @@ interface SyncButtonProps {
 }
 
 export function SyncButton({ status, disabled, onSync }: SyncButtonProps) {
+  const { t } = useLocale();
   const isRunning = status === "running";
 
   return (
@@ -24,12 +26,12 @@ export function SyncButton({ status, disabled, onSync }: SyncButtonProps) {
         {isRunning ? (
           <>
             <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-            Syncing...
+            {t("sync.syncing")}
           </>
         ) : (
           <>
             <Play className="mr-2 h-3.5 w-3.5" />
-            Sync Now
+            {t("sync.syncNow")}
           </>
         )}
       </Button>

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
+import { renderWithLocale } from "@/test/test-utils";
 import { SyncSummary } from "./sync-summary";
 import type { SyncResult } from "@/lib/types";
 
@@ -18,14 +19,14 @@ function makeSyncResult(overrides: Partial<SyncResult> = {}): SyncResult {
 
 describe("SyncSummary", () => {
   it("renders nothing when no result and no error", () => {
-    const { container } = render(
+    const { container } = renderWithLocale(
       <SyncSummary result={null} error={null} onViewLog={() => {}} />,
     );
     expect(container.firstElementChild).toBeNull();
   });
 
   it("shows success summary for successful result", () => {
-    render(
+    renderWithLocale(
       <SyncSummary
         result={makeSyncResult()}
         error={null}
@@ -36,7 +37,7 @@ describe("SyncSummary", () => {
   });
 
   it("shows failure summary for error", () => {
-    render(
+    renderWithLocale(
       <SyncSummary
         result={null}
         error="rsync failed"
@@ -48,7 +49,7 @@ describe("SyncSummary", () => {
 
   it("calls onViewLog when clicked", () => {
     const onViewLog = vi.fn();
-    render(
+    renderWithLocale(
       <SyncSummary
         result={makeSyncResult()}
         error={null}
@@ -60,7 +61,7 @@ describe("SyncSummary", () => {
   });
 
   it("shows chevron icon", () => {
-    render(
+    renderWithLocale(
       <SyncSummary
         result={makeSyncResult()}
         error={null}
@@ -74,7 +75,7 @@ describe("SyncSummary", () => {
   });
 
   it("shows files only when no dirs", () => {
-    render(
+    renderWithLocale(
       <SyncSummary
         result={makeSyncResult({ files_transferred: 5, dirs_transferred: 0 })}
         error={null}
@@ -85,7 +86,7 @@ describe("SyncSummary", () => {
   });
 
   it("shows dirs only when no files", () => {
-    render(
+    renderWithLocale(
       <SyncSummary
         result={makeSyncResult({ files_transferred: 0, dirs_transferred: 2 })}
         error={null}
@@ -96,7 +97,7 @@ describe("SyncSummary", () => {
   });
 
   it("shows no changes when both are 0", () => {
-    render(
+    renderWithLocale(
       <SyncSummary
         result={makeSyncResult({ files_transferred: 0, dirs_transferred: 0 })}
         error={null}

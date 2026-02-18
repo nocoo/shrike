@@ -14,6 +14,7 @@ import {
 import { Collapsible as CollapsiblePrimitive } from "radix-ui";
 import { Button } from "@/components/ui/button";
 import { scanCodingConfigsTree, addEntry } from "@/lib/commands";
+import { useLocale, formatInstalledCli, formatAddToSyncList } from "@/lib/i18n";
 import type { AgentTree, TreeChild } from "@/lib/types";
 
 interface WizardPageProps {
@@ -234,6 +235,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
   const [added, setAdded] = useState<AddedMap>({});
   const [errors, setErrors] = useState<ErrorMap>({});
   const [adding, setAdding] = useState(false);
+  const { t, locale } = useLocale();
 
   const handleScan = useCallback(async () => {
     setScanState("scanning");
@@ -535,7 +537,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-base font-semibold">AI CLI Backup</h1>
+          <h1 className="text-base font-semibold">{t("title.wizard")}</h1>
         </div>
       </header>
 
@@ -545,7 +547,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
           <div className="flex flex-col items-center justify-center gap-3 py-12">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
-              Scanning for AI CLI configs...
+              {t("wizard.scanning")}
             </p>
           </div>
         )}
@@ -554,11 +556,11 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
           <div className="flex flex-col items-center justify-center gap-3 py-12">
             <FolderCog className="h-6 w-6 text-muted-foreground/60" />
             <p className="text-sm text-muted-foreground">
-              No AI CLI configs found
+              {t("wizard.noConfigs")}
             </p>
             <Button variant="outline" size="sm" onClick={handleScan}>
               <Search className="mr-1.5 h-3 w-3" />
-              Scan Again
+              {t("wizard.scanAgain")}
             </Button>
           </div>
         )}
@@ -567,7 +569,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Installed CLI ({trees.length})
+                {formatInstalledCli(trees.length, locale)}
               </h2>
               <Button
                 variant="ghost"
@@ -575,7 +577,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
                 className="text-[11px] text-muted-foreground"
                 onClick={toggleAll}
               >
-                {allSelected ? "Deselect all" : "Select all"}
+                {allSelected ? t("wizard.deselectAll") : t("wizard.selectAll")}
               </Button>
             </div>
 
@@ -585,7 +587,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
 
             {allAdded && (
               <p className="text-center text-[11px] text-green-600 dark:text-green-400">
-                All configs added to sync list
+                {t("wizard.allAdded")}
               </p>
             )}
           </div>
@@ -597,7 +599,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
         <div className="border-t px-4 py-3">
           {allAdded ? (
             <Button size="sm" className="w-full" onClick={onDone}>
-              Done
+              {t("wizard.done")}
             </Button>
           ) : (
             <Button
@@ -609,10 +611,10 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
               {adding ? (
                 <>
                   <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-                  Adding...
+                  {t("wizard.adding")}
                 </>
               ) : (
-                `Add ${selectedCount} to Sync List`
+                formatAddToSyncList(selectedCount, locale)
               )}
             </Button>
           )}

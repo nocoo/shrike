@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { listen, TauriEvent } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import { addEntry, listEntries, removeEntry } from "@/lib/commands";
+import { useLocale, formatDialogTitle } from "@/lib/i18n";
 import type { BackupEntry } from "@/lib/types";
 
 interface DragDropPayload {
@@ -15,6 +16,7 @@ export function useFileList() {
   const [entries, setEntries] = useState<BackupEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
+  const { locale } = useLocale();
 
   // Load entries on mount
   useEffect(() => {
@@ -59,9 +61,7 @@ export function useFileList() {
     const selected = await open({
       multiple: true,
       directory,
-      title: directory
-        ? "Select folders to back up"
-        : "Select files to back up",
+      title: formatDialogTitle(directory, locale),
     });
 
     if (!selected) return;
@@ -75,7 +75,7 @@ export function useFileList() {
         console.error(`Failed to add ${path}:`, err);
       }
     }
-  }, []);
+  }, [locale]);
 
   const remove = useCallback(async (id: string) => {
     await removeEntry(id);

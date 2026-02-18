@@ -3,6 +3,7 @@
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useLocale, formatSynced } from "@/lib/i18n";
 import type { SyncResult } from "@/lib/types";
 
 interface SyncLogPageProps {
@@ -12,25 +13,23 @@ interface SyncLogPageProps {
 }
 
 /** Format the sync result header line. */
-function formatHeader(result: SyncResult | null, error: string | null): string {
-  if (error) return "Sync failed";
-  if (!result) return "No sync result";
-  const parts: string[] = [];
-  if (result.files_transferred > 0) {
-    parts.push(
-      `${result.files_transferred} ${result.files_transferred === 1 ? "file" : "files"}`,
-    );
+function formatHeader(
+  result: SyncResult | null,
+  error: string | null,
+  t: (key: Parameters<ReturnType<typeof useLocale>["t"]>[0]) => string,
+  locale: "en" | "zh",
+): string {
+  if (error) return t("syncLog.failed");
+  if (!result) return t("syncLog.noResult");
+  if (result.files_transferred === 0 && result.dirs_transferred === 0) {
+    return t("syncLog.noChanges");
   }
-  if (result.dirs_transferred > 0) {
-    parts.push(
-      `${result.dirs_transferred} ${result.dirs_transferred === 1 ? "dir" : "dirs"}`,
-    );
-  }
-  if (parts.length === 0) return "Synced (no changes)";
-  return `Synced ${parts.join(", ")}`;
+  return formatSynced(result.files_transferred, result.dirs_transferred, locale);
 }
 
 export function SyncLogPage({ result, error, onBack }: SyncLogPageProps) {
+  const { t, locale } = useLocale();
+
   return (
     <div
       className="flex h-screen flex-col pt-[74px]"
@@ -54,7 +53,7 @@ export function SyncLogPage({ result, error, onBack }: SyncLogPageProps) {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-base font-semibold">Sync Log</h1>
+          <h1 className="text-base font-semibold">{t("title.syncLog")}</h1>
         </div>
       </header>
 
@@ -62,10 +61,10 @@ export function SyncLogPage({ result, error, onBack }: SyncLogPageProps) {
       <div className="border-b px-4 py-2">
         <p className="text-sm font-medium">
           {error ? (
-            <span className="text-destructive">{formatHeader(null, error)}</span>
+            <span className="text-destructive">{formatHeader(null, error, t, locale)}</span>
           ) : (
             <span className="text-green-600 dark:text-green-400">
-              {formatHeader(result, null)}
+              {formatHeader(result, null, t, locale)}
             </span>
           )}
         </p>
@@ -75,7 +74,7 @@ export function SyncLogPage({ result, error, onBack }: SyncLogPageProps) {
       <ScrollArea className="flex-1">
         <div className="px-4 py-3">
           <pre className="whitespace-pre-wrap text-[11px] text-muted-foreground">
-            {error || result?.stdout || "No output"}
+            {error || result?.stdout || t("syncLog.noOutput")}
           </pre>
           {result?.stderr && (
             <pre className="mt-3 whitespace-pre-wrap text-[11px] text-destructive">

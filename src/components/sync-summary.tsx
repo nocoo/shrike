@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronRight } from "lucide-react";
+import { useLocale } from "@/lib/i18n";
 import type { SyncResult } from "@/lib/types";
 import { formatHeader } from "@/components/sync-log";
 
@@ -11,6 +12,8 @@ interface SyncSummaryProps {
 }
 
 export function SyncSummary({ result, error, onViewLog }: SyncSummaryProps) {
+  const { t, locale } = useLocale();
+
   if (!result && !error) return null;
 
   return (
@@ -21,10 +24,10 @@ export function SyncSummary({ result, error, onViewLog }: SyncSummaryProps) {
     >
       <p className="text-[11px] font-medium">
         {error ? (
-          <span className="text-destructive">{formatHeader(null, error)}</span>
+          <span className="text-destructive">{formatHeader(null, error, t, locale)}</span>
         ) : (
           <span className="text-green-600 dark:text-green-400">
-            {formatHeader(result, null)}
+            {formatHeader(result, null, t, locale)}
           </span>
         )}
       </p>

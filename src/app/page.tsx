@@ -12,6 +12,7 @@ import { Toolbar } from "@/components/toolbar";
 import { WizardPage } from "@/components/wizard-page";
 import { useFileList } from "@/hooks/use-file-list";
 import { useSync } from "@/hooks/use-sync";
+import { useLocale } from "@/lib/i18n";
 
 type Page = "home" | "settings" | "wizard" | "about" | "sync-log";
 
@@ -20,6 +21,7 @@ export default function Home() {
   const { entries, loading, isDragging, addViaDialog, remove, refresh } =
     useFileList();
   const { status, lastResult, error, sync } = useSync();
+  const { t } = useLocale();
 
   const handleSync = async () => {
     try {
@@ -66,7 +68,7 @@ export default function Home() {
   if (loading) {
     return (
       <main className="flex h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground">{t("loading")}</p>
       </main>
     );
   }

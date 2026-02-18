@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, Copy, Check } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,8 @@ import {
   setTrayVisible,
   setDockVisible,
 } from "@/lib/commands";
-import type { AppSettings } from "@/lib/types";
+import { useLocale } from "@/lib/i18n";
+import type { AppSettings, Theme, Language } from "@/lib/types";
 
 interface SettingsPageProps {
   onBack: () => void;
@@ -23,10 +25,20 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { t, setLanguage } = useLocale();
+  const { setTheme } = useTheme();
 
   useEffect(() => {
     getSettings().then(setSettings).catch(console.error);
   }, []);
+
+  // Sync loaded settings to theme/locale providers
+  useEffect(() => {
+    if (!settings) return;
+    // Map our "auto" to next-themes "system"
+    setTheme(settings.theme === "auto" ? "system" : settings.theme);
+    setLanguage(settings.language);
+  }, [settings?.theme, settings?.language, setTheme, setLanguage]);
 
   const handleSave = async () => {
     if (!settings) return;
@@ -76,6 +88,28 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
     }
   };
 
+  const handleThemeChange = async (theme: Theme) => {
+    if (!settings) return;
+    const updated = { ...settings, theme };
+    setSettings(updated);
+    try {
+      await updateSettings(updated);
+    } catch (err) {
+      console.error("Failed to save theme:", err);
+    }
+  };
+
+  const handleLanguageChange = async (language: Language) => {
+    if (!settings) return;
+    const updated = { ...settings, language };
+    setSettings(updated);
+    try {
+      await updateSettings(updated);
+    } catch (err) {
+      console.error("Failed to save language:", err);
+    }
+  };
+
   return (
     <div className="flex h-screen flex-col pt-[74px]" onContextMenu={(e) => e.preventDefault()}>
       {/* Settings header with back button */}
@@ -96,7 +130,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-base font-semibold">Settings</h1>
+          <h1 className="text-base font-semibold">{t("title.settings")}</h1>
         </div>
       </header>
 
@@ -107,14 +141,14 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
             {/* General section */}
             <section className="space-y-3">
               <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                General
+                {t("settings.general")}
               </h2>
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>Launch at Login</Label>
+                  <Label>{t("settings.launchAtLogin")}</Label>
                   <p className="text-[11px] text-muted-foreground">
-                    Start Shrike when you log in
+                    {t("settings.launchAtLoginDesc")}
                   </p>
                 </div>
                 <Switch
@@ -126,9 +160,9 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>Show in Menu Bar</Label>
+                  <Label>{t("settings.showInMenuBar")}</Label>
                   <p className="text-[11px] text-muted-foreground">
-                    Display tray icon in the menu bar
+                    {t("settings.showInMenuBarDesc")}
                   </p>
                 </div>
                 <Switch
@@ -140,9 +174,9 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>Show in Dock</Label>
+                  <Label>{t("settings.showInDock")}</Label>
                   <p className="text-[11px] text-muted-foreground">
-                    Display app icon in the macOS Dock
+                    {t("settings.showInDockDesc")}
                   </p>
                 </div>
                 <Switch
@@ -153,14 +187,59 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
               </div>
             </section>
 
-            {/* Sync section */}
+            {/* Appearance section */}
             <section className="space-y-3">
               <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Sync
+                {t("settings.appearance")}
               </h2>
 
               <div className="space-y-1.5">
-                <Label htmlFor="gdrive-path">Google Drive Path</Label>
+                <Label>{t("settings.theme")}</Label>
+                <div className="flex gap-1">
+                  {(["auto", "light", "dark"] as const).map((value) => (
+                    <Button
+                      key={value}
+                      variant={settings.theme === value ? "default" : "outline"}
+                      size="sm"
+                      className="flex-1 text-xs"
+                      onClick={() => handleThemeChange(value)}
+                    >
+                      {t(`settings.theme${value.charAt(0).toUpperCase()}${value.slice(1)}` as Parameters<typeof t>[0])}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>{t("settings.language")}</Label>
+                <div className="flex gap-1">
+                  {([
+                    { value: "auto" as const, label: t("settings.languageAuto") },
+                    { value: "zh" as const, label: "中文" },
+                    { value: "en" as const, label: "English" },
+                  ]).map(({ value, label }) => (
+                    <Button
+                      key={value}
+                      variant={settings.language === value ? "default" : "outline"}
+                      size="sm"
+                      className="flex-1 text-xs"
+                      onClick={() => handleLanguageChange(value)}
+                    >
+                      {label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* Sync section */}
+            <section className="space-y-3">
+              <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                {t("settings.sync")}
+              </h2>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="gdrive-path">{t("settings.gdrivePath")}</Label>
                 <Input
                   id="gdrive-path"
                   value={settings.gdrive_path}
@@ -169,12 +248,12 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                   }
                 />
                 <p className="text-[11px] text-muted-foreground">
-                  Path to your Google Drive mount directory
+                  {t("settings.gdrivePathDesc")}
                 </p>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="backup-dir">Backup Directory Name</Label>
+                <Label htmlFor="backup-dir">{t("settings.backupDirName")}</Label>
                 <Input
                   id="backup-dir"
                   value={settings.backup_dir_name}
@@ -188,7 +267,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="machine-name">Machine Name</Label>
+                <Label htmlFor="machine-name">{t("settings.machineName")}</Label>
                 <Input
                   id="machine-name"
                   value={settings.machine_name}
@@ -200,7 +279,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                   }
                 />
                 <p className="text-[11px] text-muted-foreground">
-                  Subfolder per device for multi-machine backup
+                  {t("settings.machineNameDesc")}
                 </p>
               </div>
             </section>
@@ -208,12 +287,12 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
             {/* Webhook section */}
             <section className="space-y-3">
               <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Webhook
+                {t("settings.webhook")}
               </h2>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="webhook-port">Port</Label>
+                  <Label htmlFor="webhook-port">{t("settings.port")}</Label>
                   <Input
                     id="webhook-port"
                     type="number"
@@ -239,7 +318,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                     ) : (
                       <Copy className="h-3 w-3" />
                     )}
-                    {copied ? "Copied!" : "Copy curl"}
+                    {copied ? t("settings.copied") : t("settings.copyCurl")}
                   </Button>
                 </div>
               </div>
@@ -257,7 +336,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
             size="sm"
             className="w-full"
           >
-            {saving ? "Saving..." : "Save Settings"}
+            {saving ? t("settings.saving") : t("settings.save")}
           </Button>
         </div>
       )}

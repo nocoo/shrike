@@ -5,12 +5,14 @@ import Image from "next/image";
 import { ArrowLeft, Github } from "lucide-react";
 import { getVersion } from "@tauri-apps/api/app";
 import { Button } from "@/components/ui/button";
+import { useLocale } from "@/lib/i18n";
 
 interface AboutPageProps {
   onBack: () => void;
 }
 
 export function AboutPage({ onBack }: AboutPageProps) {
+  const { t } = useLocale();
   const [version, setVersion] = useState("");
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-base font-semibold">About</h1>
+          <h1 className="text-base font-semibold">{t("title.about")}</h1>
         </div>
       </header>
 

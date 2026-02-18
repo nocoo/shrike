@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { renderWithLocale } from "@/test/test-utils";
 
 // Mock @tauri-apps/api/app to return a test version
 vi.mock("@tauri-apps/api/app", () => ({
@@ -20,19 +21,19 @@ import { AboutPage } from "./about-page";
 
 describe("AboutPage", () => {
   it("renders About title", () => {
-    render(<AboutPage onBack={() => {}} />);
+    renderWithLocale(<AboutPage onBack={() => {}} />);
     expect(screen.getByText("About")).toBeInTheDocument();
   });
 
   it("renders logo image with correct src", () => {
-    render(<AboutPage onBack={() => {}} />);
+    renderWithLocale(<AboutPage onBack={() => {}} />);
     const logo = screen.getByAltText("Shrike");
     expect(logo).toBeInTheDocument();
     expect(logo).toHaveAttribute("src", "/logo-512.png");
   });
 
   it("renders app name and version from Tauri API", async () => {
-    render(<AboutPage onBack={() => {}} />);
+    renderWithLocale(<AboutPage onBack={() => {}} />);
     expect(screen.getByText("Shrike")).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByText("v1.2.3")).toBeInTheDocument();
@@ -40,7 +41,7 @@ describe("AboutPage", () => {
   });
 
   it("renders GitHub link with correct href", () => {
-    render(<AboutPage onBack={() => {}} />);
+    renderWithLocale(<AboutPage onBack={() => {}} />);
     const link = screen.getByLabelText("GitHub");
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute("href", "https://github.com/nocoo/shrike");
@@ -50,7 +51,7 @@ describe("AboutPage", () => {
 
   it("calls onBack when back button is clicked", () => {
     const onBack = vi.fn();
-    render(<AboutPage onBack={onBack} />);
+    renderWithLocale(<AboutPage onBack={onBack} />);
 
     const buttons = screen.getAllByRole("button");
     fireEvent.click(buttons[0]);
@@ -59,14 +60,14 @@ describe("AboutPage", () => {
   });
 
   it("has data-tauri-drag-region for window dragging", () => {
-    const { container } = render(<AboutPage onBack={() => {}} />);
+    const { container } = renderWithLocale(<AboutPage onBack={() => {}} />);
     const dragRegions = container.querySelectorAll("[data-tauri-drag-region]");
     // header + traffic light zone + content row = 3 drag regions
     expect(dragRegions.length).toBe(3);
   });
 
   it("prevents context menu", () => {
-    const { container } = render(<AboutPage onBack={() => {}} />);
+    const { container } = renderWithLocale(<AboutPage onBack={() => {}} />);
     const mainDiv = container.firstElementChild as HTMLElement;
     const event = new MouseEvent("contextmenu", { bubbles: true });
     const preventDefault = vi.spyOn(event, "preventDefault");

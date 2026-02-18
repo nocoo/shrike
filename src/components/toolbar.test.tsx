@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { renderWithLocale } from "@/test/test-utils";
 
 // Mock next/image to avoid SSG image optimization issues in test
 vi.mock("next/image", () => ({
@@ -25,35 +26,35 @@ describe("Toolbar", () => {
   };
 
   it("renders app title", () => {
-    render(<Toolbar {...defaultProps} />);
+    renderWithLocale(<Toolbar {...defaultProps} />);
     expect(screen.getByText("Shrike")).toBeInTheDocument();
   });
 
   it("renders logo image", () => {
-    render(<Toolbar {...defaultProps} />);
+    renderWithLocale(<Toolbar {...defaultProps} />);
     const logo = screen.getByAltText("Shrike");
     expect(logo).toBeInTheDocument();
     expect(logo).toHaveAttribute("src", "/logo-64.png");
   });
 
   it("does not show count when entryCount is 0", () => {
-    render(<Toolbar {...defaultProps} />);
+    renderWithLocale(<Toolbar {...defaultProps} />);
     expect(screen.queryByText(/item/)).not.toBeInTheDocument();
   });
 
   it("shows singular count for 1 item", () => {
-    render(<Toolbar {...defaultProps} entryCount={1} />);
+    renderWithLocale(<Toolbar {...defaultProps} entryCount={1} />);
     expect(screen.getByText("1 item")).toBeInTheDocument();
   });
 
   it("shows plural count for multiple items", () => {
-    render(<Toolbar {...defaultProps} entryCount={5} />);
+    renderWithLocale(<Toolbar {...defaultProps} entryCount={5} />);
     expect(screen.getByText("5 items")).toBeInTheDocument();
   });
 
   it("opens dropdown menu when + button is clicked", async () => {
     const user = userEvent.setup();
-    render(<Toolbar {...defaultProps} />);
+    renderWithLocale(<Toolbar {...defaultProps} />);
 
     const plusButton = screen.getAllByRole("button")[0];
     await user.click(plusButton);
@@ -67,7 +68,7 @@ describe("Toolbar", () => {
   it("calls onAddFiles when Add Files menu item is clicked", async () => {
     const user = userEvent.setup();
     const onAddFiles = vi.fn();
-    render(<Toolbar {...defaultProps} onAddFiles={onAddFiles} />);
+    renderWithLocale(<Toolbar {...defaultProps} onAddFiles={onAddFiles} />);
 
     // Open the dropdown
     const plusButton = screen.getAllByRole("button")[0];
@@ -85,7 +86,7 @@ describe("Toolbar", () => {
   it("calls onAddFolders when Add Folders menu item is clicked", async () => {
     const user = userEvent.setup();
     const onAddFolders = vi.fn();
-    render(<Toolbar {...defaultProps} onAddFolders={onAddFolders} />);
+    renderWithLocale(<Toolbar {...defaultProps} onAddFolders={onAddFolders} />);
 
     // Open the dropdown
     const plusButton = screen.getAllByRole("button")[0];
@@ -103,7 +104,7 @@ describe("Toolbar", () => {
   it("calls onWizard when wizard button is clicked", async () => {
     const user = userEvent.setup();
     const onWizard = vi.fn();
-    render(<Toolbar {...defaultProps} onWizard={onWizard} />);
+    renderWithLocale(<Toolbar {...defaultProps} onWizard={onWizard} />);
 
     const buttons = screen.getAllByRole("button");
     // Wizard button is the second button (Plus=0, Wand2=1, Settings=2, Info=3)
@@ -115,7 +116,7 @@ describe("Toolbar", () => {
   it("calls onSettings when settings button is clicked", async () => {
     const user = userEvent.setup();
     const onSettings = vi.fn();
-    render(<Toolbar {...defaultProps} onSettings={onSettings} />);
+    renderWithLocale(<Toolbar {...defaultProps} onSettings={onSettings} />);
 
     const buttons = screen.getAllByRole("button");
     // Settings button is the third button (Plus=0, Wand2=1, Settings=2, Info=3)
@@ -127,7 +128,7 @@ describe("Toolbar", () => {
   it("calls onAbout when info button is clicked", async () => {
     const user = userEvent.setup();
     const onAbout = vi.fn();
-    render(<Toolbar {...defaultProps} onAbout={onAbout} />);
+    renderWithLocale(<Toolbar {...defaultProps} onAbout={onAbout} />);
 
     const buttons = screen.getAllByRole("button");
     // Info button is the fourth button (Plus=0, Wand2=1, Settings=2, Info=3)
@@ -137,14 +138,14 @@ describe("Toolbar", () => {
   });
 
   it("has data-tauri-drag-region for window dragging", () => {
-    const { container } = render(<Toolbar {...defaultProps} />);
+    const { container } = renderWithLocale(<Toolbar {...defaultProps} />);
     const dragRegions = container.querySelectorAll("[data-tauri-drag-region]");
     // header + traffic light zone + content row = 3 drag regions
     expect(dragRegions.length).toBe(3);
   });
 
   it("uses fixed positioning for sticky header", () => {
-    const { container } = render(<Toolbar {...defaultProps} />);
+    const { container } = renderWithLocale(<Toolbar {...defaultProps} />);
     const header = container.querySelector("header");
     expect(header).toBeInTheDocument();
     expect(header?.className).toContain("fixed");
@@ -152,7 +153,7 @@ describe("Toolbar", () => {
   });
 
   it("has traffic light zone as first child", () => {
-    const { container } = render(<Toolbar {...defaultProps} />);
+    const { container } = renderWithLocale(<Toolbar {...defaultProps} />);
     const header = container.querySelector("header");
     const trafficLightZone = header?.firstElementChild as HTMLElement;
     expect(trafficLightZone.className).toContain("h-[38px]");

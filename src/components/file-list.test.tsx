@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
+import { renderWithLocale } from "@/test/test-utils";
 import {
   FileList,
   formatPath,
@@ -189,32 +190,32 @@ const mockEntries: BackupEntry[] = [
 
 describe("FileList", () => {
   it("renders nothing when entries is empty", () => {
-    const { container } = render(<FileList entries={[]} onRemove={() => {}} />);
+    const { container } = renderWithLocale(<FileList entries={[]} onRemove={() => {}} />);
     expect(container.innerHTML).toBe("");
   });
 
   it("renders file names from paths", () => {
-    render(<FileList entries={mockEntries} onRemove={() => {}} />);
+    renderWithLocale(<FileList entries={mockEntries} onRemove={() => {}} />);
     expect(screen.getByText("notes.md")).toBeInTheDocument();
     expect(screen.getByText("my-project")).toBeInTheDocument();
   });
 
   it("renders parent directory paths as full paths", () => {
-    render(<FileList entries={mockEntries} onRemove={() => {}} />);
+    renderWithLocale(<FileList entries={mockEntries} onRemove={() => {}} />);
     // Both group headers and entry dir lines may show the same path text
     expect(screen.getAllByText("/Users/nocoo/Documents").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("/Users/nocoo/workspace").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders item type badges", () => {
-    render(<FileList entries={mockEntries} onRemove={() => {}} />);
+    renderWithLocale(<FileList entries={mockEntries} onRemove={() => {}} />);
     expect(screen.getByText("file")).toBeInTheDocument();
     expect(screen.getByText("directory")).toBeInTheDocument();
   });
 
   it("calls onRemove with correct id when remove button clicked", () => {
     const onRemove = vi.fn();
-    render(<FileList entries={mockEntries} onRemove={onRemove} />);
+    renderWithLocale(<FileList entries={mockEntries} onRemove={onRemove} />);
 
     const buttons = screen.getAllByRole("button");
     fireEvent.click(buttons[0]);
@@ -223,7 +224,7 @@ describe("FileList", () => {
   });
 
   it("renders correct number of entries", () => {
-    render(<FileList entries={mockEntries} onRemove={() => {}} />);
+    renderWithLocale(<FileList entries={mockEntries} onRemove={() => {}} />);
     const buttons = screen.getAllByRole("button");
     expect(buttons).toHaveLength(2);
   });
@@ -245,7 +246,7 @@ describe("FileList", () => {
         last_synced: null,
       },
     ];
-    render(<FileList entries={multiGroupEntries} onRemove={() => {}} />);
+    renderWithLocale(<FileList entries={multiGroupEntries} onRemove={() => {}} />);
     // Group headers and entry dir lines may both show the path
     expect(screen.getAllByText("/Users/nocoo/Documents").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("/Users/nocoo/workspace").length).toBeGreaterThanOrEqual(1);
@@ -268,7 +269,7 @@ describe("FileList", () => {
         last_synced: null,
       },
     ];
-    render(<FileList entries={singleGroupEntries} onRemove={() => {}} />);
+    renderWithLocale(<FileList entries={singleGroupEntries} onRemove={() => {}} />);
     expect(screen.getByText("project-a")).toBeInTheDocument();
     expect(screen.getByText("project-b")).toBeInTheDocument();
     // No sticky group header rendered for single group
@@ -294,7 +295,7 @@ describe("FileList", () => {
         last_synced: null,
       },
     ];
-    render(<FileList entries={mixedEntries} onRemove={() => {}} />);
+    renderWithLocale(<FileList entries={mixedEntries} onRemove={() => {}} />);
     expect(screen.getByText("Other")).toBeInTheDocument();
   });
 });

@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useLocale, pluralizeItems } from "@/lib/i18n";
 
 interface ToolbarProps {
   entryCount: number;
@@ -20,6 +21,8 @@ interface ToolbarProps {
 }
 
 export function Toolbar({ entryCount, onAddFiles, onAddFolders, onWizard, onSettings, onAbout }: ToolbarProps) {
+  const { t, locale } = useLocale();
+
   return (
     <header
       data-tauri-drag-region
@@ -43,7 +46,7 @@ export function Toolbar({ entryCount, onAddFiles, onAddFolders, onWizard, onSett
           <h1 className="text-base font-semibold">Shrike</h1>
           {entryCount > 0 && (
             <span className="text-[11px] text-muted-foreground">
-              {entryCount} item{entryCount !== 1 ? "s" : ""}
+              {pluralizeItems(entryCount, locale)}
             </span>
           )}
         </div>
@@ -57,11 +60,11 @@ export function Toolbar({ entryCount, onAddFiles, onAddFolders, onWizard, onSett
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={onAddFiles}>
                 <File className="mr-2 h-4 w-4" />
-                Add Files
+                {t("toolbar.addFiles")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onAddFolders}>
                 <Folder className="mr-2 h-4 w-4" />
-                Add Folders
+                {t("toolbar.addFolders")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
