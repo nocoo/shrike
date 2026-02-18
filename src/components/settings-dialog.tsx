@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useCallback, type ReactNode } from "react";
+import { Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,10 +23,12 @@ export function SettingsDialog({ children }: SettingsDialogProps) {
   const [open, setOpen] = useState(false);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (open) {
       getSettings().then(setSettings).catch(console.error);
+      setCopied(false);
     }
   }, [open]);
 
@@ -41,6 +44,14 @@ export function SettingsDialog({ children }: SettingsDialogProps) {
       setSaving(false);
     }
   };
+
+  const handleCopyWebhook = useCallback(async () => {
+    if (!settings) return;
+    const url = `curl -X POST http://localhost:${settings.webhook_port}/sync -H "Authorization: Bearer ${settings.webhook_token}"`;
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [settings]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -89,24 +100,25 @@ export function SettingsDialog({ children }: SettingsDialogProps) {
                   onChange={(e) =>
                     setSettings({
                       ...settings,
-                      webhook_port: parseInt(e.target.value, 10) || 18888,
+                      webhook_port: parseInt(e.target.value, 10) || 7022,
                     })
                   }
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="webhook-token">Webhook Token</Label>
-                <Input
-                  id="webhook-token"
-                  value={settings.webhook_token}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      webhook_token: e.target.value,
-                    })
-                  }
-                />
+              <div className="flex items-end">
+                <Button
+                  variant="outline"
+                  className="w-full gap-2"
+                  onClick={handleCopyWebhook}
+                >
+                  {copied ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                  {copied ? "Copied!" : "Copy Webhook"}
+                </Button>
               </div>
             </div>
 

@@ -35,7 +35,7 @@ Shrike is a lightweight macOS app that lets you pick specific files and folders 
 - **Native file picker** -- click + to browse via macOS dialog
 - **Incremental sync** -- rsync only transfers what changed
 - **Full path preservation** -- `rsync -avR` keeps your directory structure intact
-- **Webhook trigger** -- automate backups via `POST http://localhost:18888/sync`
+- **Webhook trigger** -- automate backups via `POST http://localhost:7022/sync`
 - **Portable data** -- settings stored in a single JSON file
 
 ## Requirements
@@ -65,11 +65,11 @@ Trigger syncs programmatically from scripts, cron jobs, or automation tools:
 
 ```bash
 # Trigger a sync
-curl -X POST http://localhost:18888/sync \
+curl -X POST http://localhost:7022/sync \
   -H "Authorization: Bearer <your-token>"
 
 # Check status
-curl http://localhost:18888/status \
+curl http://localhost:7022/status \
   -H "Authorization: Bearer <your-token>"
 ```
 

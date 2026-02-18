@@ -28,7 +28,7 @@ pub fn run() {
                         serde_json::from_value(val).unwrap_or_default();
                     settings.webhook_port
                 }
-                None => 18888,
+                None => 7022,
             };
 
             webhook::start_webhook_server(app.handle().clone(), port);

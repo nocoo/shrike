@@ -14,7 +14,7 @@ Shrike 是一个 macOS 桌面应用，用于将选定的文件和文件夹增量
 | 数据持久化   | Tauri Store Plugin     | 自动管理的 JSON 存储                 |
 | 同步引擎     | rsync -avR             | 系统原生、增量同步、保留目录结构     |
 | 云存储       | Google Drive for Desktop | 本地挂载卷                         |
-| Webhook      | Rust Axum              | 嵌入式 HTTP 服务器 (127.0.0.1:18888) |
+| Webhook | Rust Axum | 嵌入式 HTTP 服务器 (127.0.0.1:7022) |
 | 包管理器     | bun                    | 快速、现代                           |
 
 ## 分层架构
@@ -42,7 +42,7 @@ Shrike 是一个 macOS 桌面应用，用于将选定的文件和文件夹增量
 │  │  └── executor.rs   — Layer 3: rsync 执行与解析       │  │
 │  └──────────────────────────────────────────────────────┘  │
 │  ┌──────────────────────────────────────────────────────┐  │
-│  │ webhook.rs — Axum HTTP 服务器 (localhost:18888)       │  │
+│  │ webhook.rs — Axum HTTP 服务器 (localhost:7022) │  │
 │  └──────────────────────────────────────────────────────┘  │
 │  ┌──────────────────────────────────────────────────────┐  │
 │  │ types.rs — 共享类型定义                               │  │
@@ -93,7 +93,7 @@ struct BackupEntry {
 struct AppSettings {
     gdrive_path: String,       // Google Drive 挂载路径
     backup_dir_name: String,   // 备份子目录名 (默认 "ShrikeBackup")
-    webhook_port: u16,         // Webhook 端口 (默认 18888)
+webhook_port: u16, // Webhook 端口 (默认 7022)
     webhook_token: String,     // Bearer Token
 }
 ```

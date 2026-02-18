@@ -101,6 +101,6 @@ gh release create v0.2.0 --title "v0.2.0" --notes-file CHANGELOG_EXCERPT.md
 - 拖放和文件选择器添加备份项
 - rsync 增量同步到 Google Drive
 - 三层同步管线 (filelist → validation → executor)
-- Axum Webhook 服务器 (localhost:18888)
+- Axum Webhook 服务器 (localhost:7022)
 - Bearer Token 认证
 - 122 个自动化测试

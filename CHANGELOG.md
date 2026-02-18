@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   - `validation.rs` — validate paths, detect duplicates, check destination
   - `executor.rs` — build rsync args, execute, parse output
 - Incremental sync via `rsync -avR` preserving full directory structure
-- Axum webhook server on 127.0.0.1:18888 with Bearer token auth
+- Axum webhook server on 127.0.0.1:7022 with Bearer token auth
   - `GET /status` — current sync status
   - `POST /sync` — trigger sync
 - Application icons generated from logo.png

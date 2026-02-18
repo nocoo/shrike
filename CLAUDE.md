@@ -5,7 +5,7 @@
 - **Package manager**: `bun` (not npm/pnpm)
 - **Dev command**: `bun run tauri dev`
 - **Rust edition**: 2024 (resolver = "3")
-- **Port**: Webhook on 127.0.0.1:18888
+- **Port**: Webhook on 127.0.0.1:7022
 - **Google Drive path**: `/Users/nocoo/Library/CloudStorage/GoogleDrive-user@example.com/我的云端硬盘/ShrikeBackup/`
 
 ## Version Management

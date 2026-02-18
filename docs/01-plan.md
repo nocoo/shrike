@@ -20,7 +20,7 @@ Next.js + shadcn/ui   Tauri Commands + Store       macOS rsync
 | Data Persistence  | Tauri Store Plugin     | Auto-managed JSON in app_data_dir                  |
 | Sync Engine       | rsync -avR             | System native, incremental, preserves dir structure |
 | Cloud Storage     | Google Drive for Desktop | Mounted as local volume                          |
-| Webhook           | Rust Axum              | Embedded HTTP server on 127.0.0.1:18888            |
+| Webhook | Rust Axum | Embedded HTTP server on 127.0.0.1:7022 |
 | Package Manager   | bun                    | Fast, modern                                       |
 
 ## Project Structure
@@ -83,7 +83,7 @@ shrike/
   "settings": {
     "gdrive_path": "/Users/nocoo/Library/CloudStorage/GoogleDrive-user@example.com/\u6211\u7684\u4e91\u7aef\u786c\u76df",
     "backup_dir_name": "ShrikeBackup",
-    "webhook_port": 18888,
+    "webhook_port": 7022,
     "webhook_token": "generated-uuid-token"
   }
 }
@@ -123,7 +123,7 @@ shrike/
 
 ### Phase 3: Webhook
 
-- [x] 3.1 Add Axum webhook server on localhost:18888
+- [x] 3.1 Add Axum webhook server on localhost:7022
 - [x] 3.2 Add webhook auth with bearer token
 
 ### Phase 4: Polish
@@ -155,10 +155,10 @@ rsync -avR --files-from=/tmp/shrike_backup_list.txt / "$GDRIVE_PATH/ShrikeBackup
 
 ```bash
 # Trigger sync
-curl -X POST http://localhost:18888/sync -H "Authorization: Bearer <token>"
+curl -X POST http://localhost:7022/sync -H "Authorization: Bearer <token>"
 
 # Check status
-curl http://localhost:18888/status -H "Authorization: Bearer <token>"
+curl http://localhost:7022/status -H "Authorization: Bearer <token>"
 ```
 
 ### Security

@@ -19,10 +19,10 @@ describe("types", () => {
     const settings: AppSettings = {
       gdrive_path: "/mnt/gdrive",
       backup_dir_name: "ShrikeBackup",
-      webhook_port: 18888,
+      webhook_port: 7022,
       webhook_token: "test-token",
     };
-    expect(settings.webhook_port).toBe(18888);
+    expect(settings.webhook_port).toBe(7022);
     expect(settings.backup_dir_name).toBe("ShrikeBackup");
   });
 

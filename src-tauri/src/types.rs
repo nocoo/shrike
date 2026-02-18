@@ -49,7 +49,7 @@ impl Default for AppSettings {
                 "/Users/nocoo/Library/CloudStorage/GoogleDrive-user@example.com/我的云端硬盘",
             ),
             backup_dir_name: String::from("ShrikeBackup"),
-            webhook_port: 18888,
+            webhook_port: 7022,
             webhook_token: Uuid::new_v4().to_string(),
         }
     }
@@ -136,7 +136,7 @@ mod tests {
         let settings = AppSettings::default();
         assert!(settings.gdrive_path.contains("GoogleDrive"));
         assert_eq!(settings.backup_dir_name, "ShrikeBackup");
-        assert_eq!(settings.webhook_port, 18888);
+        assert_eq!(settings.webhook_port, 7022);
         assert!(!settings.webhook_token.is_empty());
     }
 
@@ -155,7 +155,7 @@ mod tests {
     fn store_data_default_empty() {
         let store = StoreData::default();
         assert!(store.items.is_empty());
-        assert_eq!(store.settings.webhook_port, 18888);
+        assert_eq!(store.settings.webhook_port, 7022);
     }
 
     #[test]
