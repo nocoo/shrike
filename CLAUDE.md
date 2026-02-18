@@ -10,12 +10,12 @@
 
 ## Version Management
 
-### Current version: 0.1.1
+### Current version: 0.1.2
 
 Version is tracked in three files (keep in sync):
-- `package.json` → `"version": "0.1.1"`
-- `src-tauri/Cargo.toml` → `version = "0.1.1"`
-- `src-tauri/tauri.conf.json` → `"version": "0.1.1"`
+- `package.json` → `"version": "0.1.2"`
+- `src-tauri/Cargo.toml` → `version = "0.1.2"`
+- `src-tauri/tauri.conf.json` → `"version": "0.1.2"`
 
 ### Release process
 1. Update version in all three files
@@ -34,7 +34,7 @@ Rules: imperative mood, lowercase, max 50 chars, no period
 
 ### Test commands
 ```bash
-bun run test          # vitest (frontend, 143 tests)
+bun run test          # vitest (frontend, 147 tests)
 bun run test:rs       # cargo test --lib (rust UT, 109 tests)
 bun run test:e2e:rs   # cargo test --tests (rust E2E, 12 tests)
 bun run test:all      # all of the above
@@ -48,8 +48,8 @@ bun run lint          # eslint + clippy
 ### Test distribution
 - Rust UT: 109 (types 12, error 4, commands 5, sync/filelist 13, sync/validation 23, sync/executor 16, sync/mod 4, webhook 4, sync status 5, gdrive detect 8, scan configs 7, scan tree 8)
 - Rust E2E: 12 (sync_e2e 7, webhook_e2e 5)
-- TS: 143 (utils 4, types 4, components 135)
-- **Total: 264**
+- TS: 147 (utils 4, types 4, components 139)
+- **Total: 268**
 
 ### Coverage target
 - Core sync logic: 95%+
@@ -68,6 +68,25 @@ sync/mod.rs         → Orchestrate: generate → validate → execute
 ### Key API paths
 - `commands.rs` → Tauri IPC: add_entry, remove_entry, list_entries, get_settings, update_settings, trigger_sync, scan_coding_configs, scan_coding_configs_tree
 - `webhook.rs` → HTTP: GET /status, POST /sync (both require Bearer token)
+
+### i18n system (self-built, zero dependencies)
+```
+src/lib/i18n.tsx       → Translation dicts (en/zh, 75+ keys), LocaleProvider, useLocale hook
+src/app/providers.tsx  → Client component wrapping ThemeProvider + LocaleProvider
+src/test/test-utils.tsx → renderWithLocale() test helper
+```
+- `resolveLocale("auto")` → detects via `navigator.language`, falls back to `"en"` in test env
+- Pluralization helpers: `pluralizeItems`, `pluralizeFiles`, `pluralizeDirs`, `formatSynced`, `formatAddToSyncList`, `formatInstalledCli`, `formatDialogTitle`
+- `formatHeader(result, error, t, locale)` — shared by sync-log and sync-summary
+
+### Theme system (next-themes)
+- `next-themes` ThemeProvider with `attribute="class"` in `providers.tsx`
+- CSS dark mode already in `globals.css`: `:root` (light) + `.dark` (dark) variable blocks
+- Tailwind v4 dark variant: `@custom-variant dark (&:is(.dark *));`
+- Settings maps `"auto"` → next-themes `"system"`
+
+### AppSettings (10 fields)
+When adding a field, update ALL fixtures: `types.rs` (2), `sync/mod.rs` (1), `sync_e2e.rs` (1), `webhook_e2e.rs` (2), `types.test.ts` (1), `settings-page.test.tsx` (1)
 
 ## Known Issues & Gotchas
 
