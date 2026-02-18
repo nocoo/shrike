@@ -34,7 +34,7 @@ Rules: imperative mood, lowercase, max 50 chars, no period
 
 ### Test commands
 ```bash
-bun run test          # vitest (frontend, 31 tests)
+bun run test          # vitest (frontend, 33 tests)
 bun run test:rs       # cargo test --lib (rust UT, 84 tests)
 bun run test:e2e:rs   # cargo test --tests (rust E2E, 12 tests)
 bun run test:all      # all of the above
@@ -81,4 +81,10 @@ sync/mod.rs         → Orchestrate: generate → validate → execute
 
 ## Retrospective
 
-(Record mistakes and lessons learned here)
+1. **Tauri v2 window dragging requires THREE things** — Initially thought `data-tauri-drag-region` alone was enough. Dragging silently failed until we also added (1) CSS `app-region: drag` rule targeting `[data-tauri-drag-region]`, and (2) `core:window:allow-start-dragging` permission in `capabilities/default.json`. Silent failure made debugging hard — always check all three.
+
+2. **`data-tauri-drag-region` doesn't propagate to children** — Child elements (buttons, icons) inside a drag-region element don't inherit the drag behavior. Conversely, they need explicit `app-region: no-drag` CSS to remain clickable, otherwise they might trigger window drag instead of their click handlers.
+
+3. **Next.js 16 Server Components cannot have event handlers** — Attempted to add `onContextMenu` handler in `layout.tsx` (a Server Component), which caused a build error. Event handlers must go on Client Components (`"use client"`). Moved the handler to `page.tsx` instead.
+
+4. **Always verify TS test count after adding component tests** — The test count in CLAUDE.md said 31 TS tests but the actual count was 33 after toolbar drag-region tests were added. Keep the count accurate to avoid confusion.
