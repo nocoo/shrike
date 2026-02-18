@@ -31,7 +31,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex h-screen flex-col" onContextMenu={(e) => e.preventDefault()}>
+    <main className="flex h-screen flex-col pt-[74px]" onContextMenu={(e) => e.preventDefault()}>
       <Toolbar entryCount={entries.length} onAdd={addViaDialog} />
 
       <div className="flex flex-1 flex-col overflow-hidden">

@@ -67,12 +67,22 @@ describe("Toolbar", () => {
   it("has data-tauri-drag-region for window dragging", () => {
     const { container } = render(<Toolbar entryCount={0} onAdd={() => {}} />);
     const dragRegions = container.querySelectorAll("[data-tauri-drag-region]");
-    expect(dragRegions.length).toBeGreaterThanOrEqual(1);
+    // header + traffic light zone + content row = 3 drag regions
+    expect(dragRegions.length).toBe(3);
   });
 
-  it("has left padding for macOS traffic light buttons", () => {
+  it("uses fixed positioning for sticky header", () => {
     const { container } = render(<Toolbar entryCount={0} onAdd={() => {}} />);
-    const toolbar = container.firstElementChild as HTMLElement;
-    expect(toolbar.className).toContain("pl-[78px]");
+    const header = container.querySelector("header");
+    expect(header).toBeInTheDocument();
+    expect(header?.className).toContain("fixed");
+    expect(header?.className).toContain("top-0");
+  });
+
+  it("has traffic light zone as first child", () => {
+    const { container } = render(<Toolbar entryCount={0} onAdd={() => {}} />);
+    const header = container.querySelector("header");
+    const trafficLightZone = header?.firstElementChild as HTMLElement;
+    expect(trafficLightZone.className).toContain("h-[38px]");
   });
 });
