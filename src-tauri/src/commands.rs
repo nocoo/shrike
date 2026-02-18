@@ -225,6 +225,11 @@ pub fn set_dock_visible(app: AppHandle, visible: bool) -> Result<()> {
             let _ = window.show();
             let _ = window.set_focus();
         }
+        // macOS does not restore the app icon when switching back to Regular;
+        // re-apply from the bundled icon so the dock shows the correct icon.
+        if visible {
+            crate::restore_dock_icon();
+        }
     }
     // Persist in settings
     let mut settings = get_settings(app.clone())?;

@@ -12,6 +12,30 @@ use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_store::StoreExt;
 
 const TRAY_ICON_BYTES: &[u8] = include_bytes!("../icons/tray-icon.png");
+const APP_ICON_BYTES: &[u8] = include_bytes!("../icons/icon.png");
+
+/// Re-apply the app icon to the macOS dock.
+///
+/// When switching from `ActivationPolicy::Accessory` back to `Regular`,
+/// macOS shows a generic executable icon. This function loads the bundled
+/// icon.png and sets it via `NSApplication.setApplicationIconImage:`.
+#[cfg(target_os = "macos")]
+pub fn restore_dock_icon() {
+    use objc2::AnyThread;
+    use objc2_app_kit::{NSApplication, NSImage};
+    use objc2_foundation::NSData;
+
+    unsafe {
+        let data = NSData::with_bytes(APP_ICON_BYTES);
+        let icon = NSImage::initWithData(NSImage::alloc(), &data);
+        if let Some(icon) = icon
+            && let Some(mtm) = objc2::MainThreadMarker::new()
+        {
+            let app = NSApplication::sharedApplication(mtm);
+            app.setApplicationIconImage(Some(&icon));
+        }
+    }
+}
 
 pub fn run() {
     tauri::Builder::default()
