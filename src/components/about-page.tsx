@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ArrowLeft, Github } from "lucide-react";
+import { getVersion } from "@tauri-apps/api/app";
 import { Button } from "@/components/ui/button";
 
 interface AboutPageProps {
@@ -9,6 +11,12 @@ interface AboutPageProps {
 }
 
 export function AboutPage({ onBack }: AboutPageProps) {
+  const [version, setVersion] = useState("");
+
+  useEffect(() => {
+    getVersion().then((v) => setVersion(v));
+  }, []);
+
   return (
     <div className="flex h-screen flex-col pt-[74px]" onContextMenu={(e) => e.preventDefault()}>
       {/* About header with back button */}
@@ -44,7 +52,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
         />
         <div className="text-center">
           <p className="text-base font-semibold">Shrike</p>
-          <p className="text-sm text-muted-foreground">v0.1.0</p>
+          <p className="text-sm text-muted-foreground">{version ? `v${version}` : ""}</p>
         </div>
         <a
           href="https://github.com/nocoo/shrike"

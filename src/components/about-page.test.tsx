@@ -1,5 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+
+// Mock @tauri-apps/api/app to return a test version
+vi.mock("@tauri-apps/api/app", () => ({
+  getVersion: vi.fn().mockResolvedValue("1.2.3"),
+}));
 
 // Mock next/image to avoid SSG image optimization issues in test
 vi.mock("next/image", () => ({
@@ -26,10 +31,12 @@ describe("AboutPage", () => {
     expect(logo).toHaveAttribute("src", "/logo-512.png");
   });
 
-  it("renders app name and version", () => {
+  it("renders app name and version from Tauri API", async () => {
     render(<AboutPage onBack={() => {}} />);
     expect(screen.getByText("Shrike")).toBeInTheDocument();
-    expect(screen.getByText("v0.1.0")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("v1.2.3")).toBeInTheDocument();
+    });
   });
 
   it("renders GitHub link with correct href", () => {
