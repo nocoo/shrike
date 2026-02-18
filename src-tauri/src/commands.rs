@@ -148,11 +148,18 @@ pub fn update_settings(app: AppHandle, settings: AppSettings) -> Result<()> {
 }
 
 /// Trigger a sync of all backup entries via rsync.
+///
+/// This command is async so that the blocking rsync subprocess does not
+/// freeze the Tauri IPC thread (and therefore the UI).
 #[tauri::command]
-pub fn trigger_sync(app: AppHandle) -> Result<SyncResult> {
+pub async fn trigger_sync(app: AppHandle) -> Result<SyncResult> {
     let entries = load_items(&app)?;
     let settings = get_settings(app)?;
-    let result = sync::execute_sync(&entries, &settings)?;
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        sync::execute_sync(&entries, &settings)
+    })
+    .await
+    .map_err(|e| ShrikeError::SyncFailed(e.to_string()))??;
     Ok(result)
 }
 
