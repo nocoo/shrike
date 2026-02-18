@@ -1,18 +1,25 @@
 "use client";
 
 import Image from "next/image";
-import { Info, Plus, Settings, Wand2 } from "lucide-react";
+import { File, Folder, Info, Plus, Settings, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ToolbarProps {
   entryCount: number;
-  onAdd: () => void;
+  onAddFiles: () => void;
+  onAddFolders: () => void;
   onWizard: () => void;
   onSettings: () => void;
   onAbout: () => void;
 }
 
-export function Toolbar({ entryCount, onAdd, onWizard, onSettings, onAbout }: ToolbarProps) {
+export function Toolbar({ entryCount, onAddFiles, onAddFolders, onWizard, onSettings, onAbout }: ToolbarProps) {
   return (
     <header
       data-tauri-drag-region
@@ -41,9 +48,23 @@ export function Toolbar({ entryCount, onAdd, onWizard, onSettings, onAbout }: To
           )}
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onAdd}>
-            <Plus className="h-4 w-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={onAddFiles}>
+                <File className="mr-2 h-4 w-4" />
+                Add Files
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onAddFolders}>
+                <Folder className="mr-2 h-4 w-4" />
+                Add Folders
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onWizard}>
             <Wand2 className="h-4 w-4" />
           </Button>

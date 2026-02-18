@@ -54,12 +54,14 @@ export function useFileList() {
     };
   }, []);
 
-  // Open native file picker to add files/folders
-  const addViaDialog = useCallback(async () => {
+  // Open native file picker to add files or folders
+  const addViaDialog = useCallback(async (directory: boolean) => {
     const selected = await open({
       multiple: true,
-      directory: false,
-      title: "Select files or folders to back up",
+      directory,
+      title: directory
+        ? "Select folders to back up"
+        : "Select files to back up",
     });
 
     if (!selected) return;

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 // Mock next/image to avoid SSG image optimization issues in test
 vi.mock("next/image", () => ({
@@ -16,7 +17,8 @@ import { Toolbar } from "./toolbar";
 describe("Toolbar", () => {
   const defaultProps = {
     entryCount: 0,
-    onAdd: () => {},
+    onAddFiles: () => {},
+    onAddFolders: () => {},
     onWizard: () => {},
     onSettings: () => {},
     onAbout: () => {},
@@ -49,45 +51,87 @@ describe("Toolbar", () => {
     expect(screen.getByText("5 items")).toBeInTheDocument();
   });
 
-  it("calls onAdd when + button is clicked", () => {
-    const onAdd = vi.fn();
-    render(<Toolbar {...defaultProps} onAdd={onAdd} />);
+  it("opens dropdown menu when + button is clicked", async () => {
+    const user = userEvent.setup();
+    render(<Toolbar {...defaultProps} />);
 
-    const buttons = screen.getAllByRole("button");
-    fireEvent.click(buttons[0]);
+    const plusButton = screen.getAllByRole("button")[0];
+    await user.click(plusButton);
 
-    expect(onAdd).toHaveBeenCalledOnce();
+    await waitFor(() => {
+      expect(screen.getByText("Add Files")).toBeInTheDocument();
+      expect(screen.getByText("Add Folders")).toBeInTheDocument();
+    });
   });
 
-  it("calls onWizard when wizard button is clicked", () => {
+  it("calls onAddFiles when Add Files menu item is clicked", async () => {
+    const user = userEvent.setup();
+    const onAddFiles = vi.fn();
+    render(<Toolbar {...defaultProps} onAddFiles={onAddFiles} />);
+
+    // Open the dropdown
+    const plusButton = screen.getAllByRole("button")[0];
+    await user.click(plusButton);
+
+    // Click "Add Files"
+    await waitFor(() => {
+      expect(screen.getByText("Add Files")).toBeInTheDocument();
+    });
+    await user.click(screen.getByText("Add Files"));
+
+    expect(onAddFiles).toHaveBeenCalledOnce();
+  });
+
+  it("calls onAddFolders when Add Folders menu item is clicked", async () => {
+    const user = userEvent.setup();
+    const onAddFolders = vi.fn();
+    render(<Toolbar {...defaultProps} onAddFolders={onAddFolders} />);
+
+    // Open the dropdown
+    const plusButton = screen.getAllByRole("button")[0];
+    await user.click(plusButton);
+
+    // Click "Add Folders"
+    await waitFor(() => {
+      expect(screen.getByText("Add Folders")).toBeInTheDocument();
+    });
+    await user.click(screen.getByText("Add Folders"));
+
+    expect(onAddFolders).toHaveBeenCalledOnce();
+  });
+
+  it("calls onWizard when wizard button is clicked", async () => {
+    const user = userEvent.setup();
     const onWizard = vi.fn();
     render(<Toolbar {...defaultProps} onWizard={onWizard} />);
 
     const buttons = screen.getAllByRole("button");
     // Wizard button is the second button (Plus=0, Wand2=1, Settings=2, Info=3)
-    fireEvent.click(buttons[1]);
+    await user.click(buttons[1]);
 
     expect(onWizard).toHaveBeenCalledOnce();
   });
 
-  it("calls onSettings when settings button is clicked", () => {
+  it("calls onSettings when settings button is clicked", async () => {
+    const user = userEvent.setup();
     const onSettings = vi.fn();
     render(<Toolbar {...defaultProps} onSettings={onSettings} />);
 
     const buttons = screen.getAllByRole("button");
     // Settings button is the third button (Plus=0, Wand2=1, Settings=2, Info=3)
-    fireEvent.click(buttons[2]);
+    await user.click(buttons[2]);
 
     expect(onSettings).toHaveBeenCalledOnce();
   });
 
-  it("calls onAbout when info button is clicked", () => {
+  it("calls onAbout when info button is clicked", async () => {
+    const user = userEvent.setup();
     const onAbout = vi.fn();
     render(<Toolbar {...defaultProps} onAbout={onAbout} />);
 
     const buttons = screen.getAllByRole("button");
     // Info button is the fourth button (Plus=0, Wand2=1, Settings=2, Info=3)
-    fireEvent.click(buttons[3]);
+    await user.click(buttons[3]);
 
     expect(onAbout).toHaveBeenCalledOnce();
   });

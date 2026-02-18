@@ -75,7 +75,8 @@ export default function Home() {
     <main className="flex h-screen flex-col pt-[74px]" onContextMenu={(e) => e.preventDefault()}>
       <Toolbar
         entryCount={entries.length}
-        onAdd={addViaDialog}
+        onAddFiles={() => addViaDialog(false)}
+        onAddFolders={() => addViaDialog(true)}
         onWizard={() => setPage("wizard")}
         onSettings={() => setPage("settings")}
         onAbout={() => setPage("about")}
