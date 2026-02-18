@@ -284,8 +284,8 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
   const allSelected = allPaths.every((p) => selection[p] || added[p]);
 
   const renderChildRow = (child: TreeChild) => {
-    const isAdded = added[child.path];
-    const isSelected = selection[child.path] || isAdded;
+    const isAdded = !!added[child.path];
+    const isSelected = !!(selection[child.path] || isAdded);
     const error = errors[child.path];
 
     return (
@@ -329,8 +329,8 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
 
     // For file-type agents (like Aider), render a simple row
     if (tree.item_type === "file") {
-      const isAdded = added[tree.path];
-      const isSelected = selection[tree.path] || isAdded;
+      const isAdded = !!added[tree.path];
+      const isSelected = !!(selection[tree.path] || isAdded);
       const error = errors[tree.path];
 
       return (
