@@ -13,7 +13,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/version-0.1.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/platform-macOS-lightgrey" alt="Platform">
-  <img src="https://img.shields.io/badge/tests-127%20passing-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-186%20passing-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
 </p>
 
@@ -33,30 +33,38 @@ Shrike is a lightweight macOS app that lets you pick specific files and folders 
 
 - **Drag & drop** -- drop files and folders directly onto the window
 - **Native file picker** -- click + to browse via macOS dialog
+- **Quick Add wizard** -- scan and batch-add coding agent configs (.claude, .cursor, .aider, etc.)
 - **Incremental sync** -- rsync only transfers what changed
 - **Full path preservation** -- `rsync -avR` keeps your directory structure intact
 - **Webhook trigger** -- automate backups via `POST http://localhost:7022/sync`
+- **Dock & menu bar control** -- hide from Dock and/or menu bar as needed
+- **Launch at login** -- optional autostart on macOS login
 - **Portable data** -- settings stored in a single JSON file
+
+## Install
+
+Download the latest `.dmg` from the [Releases](https://github.com/nocoo/shrike/releases) page, open it, and drag Shrike to Applications.
 
 ## Requirements
 
 - macOS (with built-in `rsync` / `openrsync`)
 - [Google Drive for Desktop](https://www.google.com/drive/download/) installed and signed in
-- [Bun](https://bun.sh/) (for development)
-- [Rust](https://rustup.rs/) (for development)
 
-## Quick Start
+## Development
 
 ```bash
 # Clone
 git clone https://github.com/nocoo/shrike.git
 cd shrike
 
-# Install dependencies
+# Install dependencies (requires Bun + Rust)
 bun install
 
 # Run in dev mode
 bun run tauri dev
+
+# Build for release
+bun run tauri build
 ```
 
 ## Webhook API
@@ -89,17 +97,15 @@ Backend (Rust)
 macOS rsync -> Google Drive (local mount)
 ```
 
-See [docs/02-architecture.md](docs/02-architecture.md) for details.
-
 ## Testing
 
-127 automated tests across three layers:
+186 automated tests across three layers:
 
 | Layer | Tool | Count |
 | ----- | ---- | ----- |
-| Rust UT | `cargo test` | 84 |
+| Rust UT | `cargo test` | 101 |
 | Rust E2E | `cargo test --tests` | 12 |
-| TS UT/Component | `vitest` | 31 |
+| TS UT/Component | `vitest` | 73 |
 
 ```bash
 # Run everything
@@ -121,7 +127,6 @@ bun run lint
 shrike/
 ├── src/                    # Next.js frontend
 │   ├── components/         # UI components (shadcn/ui based)
-│   ├── hooks/              # React hooks
 │   └── lib/                # Types, utils, Tauri command wrappers
 ├── src-tauri/
 │   ├── src/
@@ -134,19 +139,9 @@ shrike/
 │   │   ├── types.rs        # Shared data types
 │   │   └── error.rs        # Error definitions
 │   └── tests/              # E2E integration tests
-└── docs/                   # Documentation (Chinese)
+└── docs/                   # Documentation
 ```
-
-## Documentation
-
-| Doc | Content |
-| --- | ------- |
-| [01-plan.md](docs/01-plan.md) | Project plan and progress |
-| [02-architecture.md](docs/02-architecture.md) | Architecture overview |
-| [03-sync-pipeline.md](docs/03-sync-pipeline.md) | Sync pipeline design |
-| [04-testing.md](docs/04-testing.md) | Testing strategy |
-| [05-versioning.md](docs/05-versioning.md) | Version management |
 
 ## License
 
-MIT
+[MIT](LICENSE)
