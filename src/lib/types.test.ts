@@ -37,6 +37,7 @@ describe("types", () => {
   it("SyncResult shape matches expected structure", () => {
     const result: SyncResult = {
       files_transferred: 10,
+      dirs_transferred: 3,
       bytes_transferred: 2048,
       stdout: "sent 2048 bytes",
       stderr: "",
@@ -45,6 +46,7 @@ describe("types", () => {
     };
     expect(result.exit_code).toBe(0);
     expect(result.files_transferred).toBe(10);
+    expect(result.dirs_transferred).toBe(3);
   });
 
   it("AgentTree shape matches expected structure", () => {

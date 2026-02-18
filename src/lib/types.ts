@@ -26,6 +26,7 @@ export interface AppSettings {
 
 export interface SyncResult {
   files_transferred: number;
+  dirs_transferred: number;
   bytes_transferred: number;
   stdout: string;
   stderr: string;

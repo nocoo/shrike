@@ -154,8 +154,10 @@ pub struct StoreData {
 /// Summary of a completed sync operation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SyncResult {
-    /// Number of files transferred
+    /// Number of files transferred (not counting directories)
     pub files_transferred: u64,
+    /// Number of directories transferred
+    pub dirs_transferred: u64,
     /// Total bytes transferred
     pub bytes_transferred: u64,
     /// rsync stdout (verbose output)
@@ -534,6 +536,7 @@ mod tests {
     fn sync_result_success() {
         let result = SyncResult {
             files_transferred: 5,
+            dirs_transferred: 2,
             bytes_transferred: 1024,
             stdout: "sent 1024 bytes".into(),
             stderr: String::new(),
@@ -547,6 +550,7 @@ mod tests {
     fn sync_result_failure() {
         let result = SyncResult {
             files_transferred: 0,
+            dirs_transferred: 0,
             bytes_transferred: 0,
             stdout: String::new(),
             stderr: "rsync error".into(),

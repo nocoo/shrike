@@ -26,13 +26,14 @@ pub fn build_rsync_args(files_from_path: &str, destination: &str) -> Vec<String>
     ]
 }
 
-/// Count transferred files from rsync verbose output.
+/// Count transferred files and directories from rsync verbose output.
 ///
-/// In rsync `-v` output, transferred files are listed one per line before the
-/// summary block. The summary block starts with a blank line. We skip known
-/// non-file lines (summary headers, directory markers, etc.).
-pub fn count_transferred_files(stdout: &str) -> u64 {
-    let mut count = 0u64;
+/// In rsync `-v` output, transferred items are listed one per line before the
+/// summary block. Directories end with `/` (e.g. `dir1/`), files do not.
+/// Returns `(files, dirs)` counts.
+pub fn count_transferred_items(stdout: &str) -> (u64, u64) {
+    let mut files = 0u64;
+    let mut dirs = 0u64;
     for line in stdout.lines() {
         let trimmed = line.trim();
         if trimmed.is_empty()
@@ -45,9 +46,13 @@ pub fn count_transferred_files(stdout: &str) -> u64 {
         {
             continue;
         }
-        count += 1;
+        if trimmed.ends_with('/') {
+            dirs += 1;
+        } else {
+            files += 1;
+        }
     }
-    count
+    (files, dirs)
 }
 
 /// Execute rsync with the given arguments and return a `SyncResult`.
@@ -61,10 +66,11 @@ pub fn run_rsync(args: &[String]) -> Result<SyncResult> {
     let stderr = String::from_utf8_lossy(&output.stderr).to_string();
     let exit_code = output.status.code().unwrap_or(-1);
 
-    let files_transferred = count_transferred_files(&stdout);
+    let (files_transferred, dirs_transferred) = count_transferred_items(&stdout);
 
     let result = SyncResult {
         files_transferred,
+        dirs_transferred,
         bytes_transferred: 0,
         stdout,
         stderr,
@@ -123,10 +129,10 @@ mod tests {
         assert_eq!(args[3], "/mnt/My Backup/");
     }
 
-    // --- count_transferred_files ---
+    // --- count_transferred_items ---
 
     #[test]
-    fn count_transferred_files_typical_output() {
+    fn count_transferred_items_typical_output() {
         let output = "\
 sending incremental file list
 Users/nocoo/.zshrc
@@ -136,27 +142,27 @@ Users/nocoo/Documents/notes.txt
 sent 1234 bytes  received 56 bytes  2580.00 bytes/sec
 total size is 1000  speedup is 0.78
 ";
-        assert_eq!(count_transferred_files(output), 3);
+        assert_eq!(count_transferred_items(output), (3, 0));
     }
 
     #[test]
-    fn count_transferred_files_empty_output() {
-        assert_eq!(count_transferred_files(""), 0);
+    fn count_transferred_items_empty_output() {
+        assert_eq!(count_transferred_items(""), (0, 0));
     }
 
     #[test]
-    fn count_transferred_files_no_transfers() {
+    fn count_transferred_items_no_transfers() {
         let output = "\
 sending incremental file list
 
 sent 100 bytes  received 20 bytes  240.00 bytes/sec
 total size is 0  speedup is 0.00
 ";
-        assert_eq!(count_transferred_files(output), 0);
+        assert_eq!(count_transferred_items(output), (0, 0));
     }
 
     #[test]
-    fn count_transferred_files_skips_dot_and_dotslash() {
+    fn count_transferred_items_skips_dot_and_dotslash() {
         let output = "\
 sending incremental file list
 ./
@@ -166,11 +172,11 @@ Users/nocoo/file.txt
 sent 500 bytes  received 30 bytes  1060.00 bytes/sec
 total size is 400  speedup is 0.75
 ";
-        assert_eq!(count_transferred_files(output), 1);
+        assert_eq!(count_transferred_items(output), (1, 0));
     }
 
     #[test]
-    fn count_transferred_files_skips_building_line() {
+    fn count_transferred_items_skips_building_line() {
         let output = "\
 building file list ... done
 sending incremental file list
@@ -179,11 +185,11 @@ file.txt
 sent 100 bytes  received 20 bytes  240.00 bytes/sec
 total size is 50  speedup is 0.42
 ";
-        assert_eq!(count_transferred_files(output), 1);
+        assert_eq!(count_transferred_items(output), (1, 0));
     }
 
     #[test]
-    fn count_transferred_files_multiple_directories() {
+    fn count_transferred_items_separates_files_and_dirs() {
         let output = "\
 sending incremental file list
 ./
@@ -197,13 +203,13 @@ dir2/sub/file3.txt
 sent 2000 bytes  received 100 bytes  4200.00 bytes/sec
 total size is 1500  speedup is 0.71
 ";
-        // dir1/, dir1/file1.txt, dir2/, dir2/file2.txt, dir2/sub/, dir2/sub/file3.txt
-        // All non-skipped lines = 6 (directories are listed too in verbose)
-        assert_eq!(count_transferred_files(output), 6);
+        // dirs: dir1/, dir2/, dir2/sub/ = 3
+        // files: dir1/file1.txt, dir2/file2.txt, dir2/sub/file3.txt = 3
+        assert_eq!(count_transferred_items(output), (3, 3));
     }
 
     #[test]
-    fn count_transferred_files_unicode_filenames() {
+    fn count_transferred_items_unicode_filenames() {
         let output = "\
 sending incremental file list
 Users/nocoo/日本語/ファイル.txt
@@ -212,13 +218,13 @@ Users/nocoo/中文/笔记.md
 sent 500 bytes  received 30 bytes  1060.00 bytes/sec
 total size is 400  speedup is 0.75
 ";
-        assert_eq!(count_transferred_files(output), 2);
+        assert_eq!(count_transferred_items(output), (2, 0));
     }
 
     #[test]
-    fn count_transferred_files_whitespace_only_lines_skipped() {
+    fn count_transferred_items_whitespace_only_lines_skipped() {
         let output = "sending incremental file list\n  \n\t\nfile.txt\n\nsent 100 bytes  received 20 bytes  240.00 bytes/sec\n";
-        assert_eq!(count_transferred_files(output), 1);
+        assert_eq!(count_transferred_items(output), (1, 0));
     }
 
     // --- run_rsync ---

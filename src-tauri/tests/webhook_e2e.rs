@@ -142,6 +142,7 @@ fn webhook_sync_result_serialization() {
     // Verify that SyncResult serializes correctly for the webhook JSON response
     let result = SyncResult {
         files_transferred: 3,
+        dirs_transferred: 0,
         bytes_transferred: 4096,
         stdout: "sending incremental file list\nfile1.txt\nfile2.txt\nfile3.txt\n".to_string(),
         stderr: String::new(),
