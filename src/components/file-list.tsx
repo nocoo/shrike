@@ -39,12 +39,12 @@ export function FileList({ entries, onRemove }: FileListProps) {
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="truncate text-sm font-medium">{name}</span>
+                  <span className="truncate text-xs font-medium">{name}</span>
                   <Badge variant="secondary" className="shrink-0 text-[10px]">
                     {entry.item_type}
                   </Badge>
                 </div>
-                <p className="truncate text-xs text-muted-foreground">{dir}</p>
+                <p className="truncate text-[10px] text-muted-foreground">{dir}</p>
               </div>
 
               <Button

@@ -90,50 +90,52 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
         </div>
       </header>
 
-      {/* Settings content */}
+      {/* Settings content — scrollable area */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {settings && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* General section */}
-            <section className="space-y-4">
-              <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <section className="space-y-3">
+              <h2 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 General
               </h2>
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Launch at Login</Label>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground">
                     Start Shrike when you log in
                   </p>
                 </div>
                 <Switch
                   checked={settings.autostart}
                   onCheckedChange={handleAutostart}
+                  size="sm"
                 />
               </div>
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Show in Menu Bar</Label>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground">
                     Display tray icon in the menu bar
                   </p>
                 </div>
                 <Switch
                   checked={settings.show_tray_icon}
                   onCheckedChange={handleTrayVisible}
+                  size="sm"
                 />
               </div>
             </section>
 
             {/* Sync section */}
-            <section className="space-y-4">
-              <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <section className="space-y-3">
+              <h2 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Sync
               </h2>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="gdrive-path">Google Drive Path</Label>
                 <Input
                   id="gdrive-path"
@@ -142,12 +144,12 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                     setSettings({ ...settings, gdrive_path: e.target.value })
                   }
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10px] text-muted-foreground">
                   Path to your Google Drive mount directory
                 </p>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="backup-dir">Backup Directory Name</Label>
                 <Input
                   id="backup-dir"
@@ -163,13 +165,13 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
             </section>
 
             {/* Webhook section */}
-            <section className="space-y-4">
-              <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <section className="space-y-3">
+              <h2 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Webhook
               </h2>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
                   <Label htmlFor="webhook-port">Port</Label>
                   <Input
                     id="webhook-port"
@@ -187,30 +189,37 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                 <div className="flex items-end">
                   <Button
                     variant="outline"
-                    className="w-full gap-2"
+                    size="sm"
+                    className="w-full gap-1.5"
                     onClick={handleCopyWebhook}
                   >
                     {copied ? (
-                      <Check className="h-4 w-4" />
+                      <Check className="h-3 w-3" />
                     ) : (
-                      <Copy className="h-4 w-4" />
+                      <Copy className="h-3 w-3" />
                     )}
                     {copied ? "Copied!" : "Copy curl"}
                   </Button>
                 </div>
               </div>
             </section>
-
-            <Button
-              onClick={handleSave}
-              disabled={saving}
-              className="w-full"
-            >
-              {saving ? "Saving..." : "Save Settings"}
-            </Button>
           </div>
         )}
       </div>
+
+      {/* Save button — sticky bottom */}
+      {settings && (
+        <div className="border-t px-4 py-3">
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            size="sm"
+            className="w-full"
+          >
+            {saving ? "Saving..." : "Save Settings"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

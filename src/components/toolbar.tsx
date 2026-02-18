@@ -33,7 +33,7 @@ export function Toolbar({ entryCount, onAdd, onSettings }: ToolbarProps) {
           />
           <h1 className="text-sm font-semibold">Shrike</h1>
           {entryCount > 0 && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[10px] text-muted-foreground">
               {entryCount} item{entryCount !== 1 ? "s" : ""}
             </span>
           )}
