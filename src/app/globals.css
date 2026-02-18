@@ -120,6 +120,14 @@
     }
   body {
     @apply bg-background text-foreground;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
+    }
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+    cursor: text;
     }
 }
 
