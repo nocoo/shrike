@@ -100,9 +100,17 @@ pub fn run() {
             // Apply dock icon visibility from settings
             if !settings.show_dock_icon {
                 #[cfg(target_os = "macos")]
-                let _ = app
-                    .handle()
-                    .set_activation_policy(tauri::ActivationPolicy::Accessory);
+                {
+                    let _ = app
+                        .handle()
+                        .set_activation_policy(tauri::ActivationPolicy::Accessory);
+                    // macOS hides windows when switching to Accessory policy;
+                    // re-show so the window is visible on first launch.
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.show();
+                        let _ = window.set_focus();
+                    }
+                }
             }
 
             // Close-to-tray: hide window instead of destroying it

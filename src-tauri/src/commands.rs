@@ -2,7 +2,7 @@ use std::fs;
 use std::path::Path;
 
 use serde_json::json;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_store::StoreExt;
 use uuid::Uuid;
 
@@ -212,12 +212,20 @@ pub fn set_tray_visible(app: AppHandle, visible: bool) -> Result<()> {
 #[tauri::command]
 pub fn set_dock_visible(app: AppHandle, visible: bool) -> Result<()> {
     #[cfg(target_os = "macos")]
-    app.set_activation_policy(if visible {
-        tauri::ActivationPolicy::Regular
-    } else {
-        tauri::ActivationPolicy::Accessory
-    })
-    .map_err(|e| ShrikeError::StoreError(e.to_string()))?;
+    {
+        app.set_activation_policy(if visible {
+            tauri::ActivationPolicy::Regular
+        } else {
+            tauri::ActivationPolicy::Accessory
+        })
+        .map_err(|e| ShrikeError::StoreError(e.to_string()))?;
+        // macOS hides all windows when switching to Accessory policy;
+        // re-show the main window so the UI stays visible.
+        if let Some(window) = app.get_webview_window("main") {
+            let _ = window.show();
+            let _ = window.set_focus();
+        }
+    }
     // Persist in settings
     let mut settings = get_settings(app.clone())?;
     settings.show_dock_icon = visible;
