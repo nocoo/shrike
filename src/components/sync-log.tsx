@@ -71,13 +71,13 @@ export function SyncLogPage({ result, error, onBack }: SyncLogPageProps) {
       </div>
 
       {/* Log output */}
-      <ScrollArea className="flex-1">
-        <div className="px-4 py-3">
-          <pre className="whitespace-pre-wrap text-[11px] text-muted-foreground">
+      <ScrollArea className="flex-1 min-w-0">
+        <div className="px-4 py-3 max-w-full overflow-hidden">
+          <pre className="whitespace-pre-wrap break-all text-[11px] text-muted-foreground">
             {error || result?.stdout || t("syncLog.noOutput")}
           </pre>
           {result?.stderr && (
-            <pre className="mt-3 whitespace-pre-wrap text-[11px] text-destructive">
+            <pre className="mt-3 whitespace-pre-wrap break-all text-[11px] text-destructive">
               {result.stderr}
             </pre>
           )}
