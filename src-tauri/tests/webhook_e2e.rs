@@ -41,6 +41,7 @@ fn webhook_sync_flow_success() {
         webhook_port: 0,
         webhook_token: "test-token".to_string(),
         show_tray_icon: true,
+        show_dock_icon: true,
         autostart: false,
     };
 
@@ -63,6 +64,7 @@ fn webhook_sync_flow_empty_entries_error() {
         webhook_port: 0,
         webhook_token: "token".to_string(),
         show_tray_icon: true,
+        show_dock_icon: true,
         autostart: false,
     };
 
