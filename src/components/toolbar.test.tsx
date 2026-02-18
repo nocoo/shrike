@@ -11,68 +11,72 @@ vi.mock("next/image", () => ({
   },
 }));
 
-// Mock SettingsDialog to avoid Tauri dependency
-vi.mock("@/components/settings-dialog", () => ({
-  SettingsDialog: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="settings-dialog">{children}</div>
-  ),
-}));
-
 import { Toolbar } from "./toolbar";
 
 describe("Toolbar", () => {
+  const defaultProps = {
+    entryCount: 0,
+    onAdd: () => {},
+    onSettings: () => {},
+  };
+
   it("renders app title", () => {
-    render(<Toolbar entryCount={0} onAdd={() => {}} />);
+    render(<Toolbar {...defaultProps} />);
     expect(screen.getByText("Shrike")).toBeInTheDocument();
   });
 
   it("renders logo image", () => {
-    render(<Toolbar entryCount={0} onAdd={() => {}} />);
+    render(<Toolbar {...defaultProps} />);
     const logo = screen.getByAltText("Shrike");
     expect(logo).toBeInTheDocument();
     expect(logo).toHaveAttribute("src", "/logo-64.png");
   });
 
   it("does not show count when entryCount is 0", () => {
-    render(<Toolbar entryCount={0} onAdd={() => {}} />);
+    render(<Toolbar {...defaultProps} />);
     expect(screen.queryByText(/item/)).not.toBeInTheDocument();
   });
 
   it("shows singular count for 1 item", () => {
-    render(<Toolbar entryCount={1} onAdd={() => {}} />);
+    render(<Toolbar {...defaultProps} entryCount={1} />);
     expect(screen.getByText("1 item")).toBeInTheDocument();
   });
 
   it("shows plural count for multiple items", () => {
-    render(<Toolbar entryCount={5} onAdd={() => {}} />);
+    render(<Toolbar {...defaultProps} entryCount={5} />);
     expect(screen.getByText("5 items")).toBeInTheDocument();
   });
 
   it("calls onAdd when + button is clicked", () => {
     const onAdd = vi.fn();
-    render(<Toolbar entryCount={0} onAdd={onAdd} />);
+    render(<Toolbar {...defaultProps} onAdd={onAdd} />);
 
-    // The first button should be the + button
     const buttons = screen.getAllByRole("button");
     fireEvent.click(buttons[0]);
 
     expect(onAdd).toHaveBeenCalledOnce();
   });
 
-  it("renders settings button inside SettingsDialog", () => {
-    render(<Toolbar entryCount={0} onAdd={() => {}} />);
-    expect(screen.getByTestId("settings-dialog")).toBeInTheDocument();
+  it("calls onSettings when settings button is clicked", () => {
+    const onSettings = vi.fn();
+    render(<Toolbar {...defaultProps} onSettings={onSettings} />);
+
+    const buttons = screen.getAllByRole("button");
+    // Settings button is the second button
+    fireEvent.click(buttons[1]);
+
+    expect(onSettings).toHaveBeenCalledOnce();
   });
 
   it("has data-tauri-drag-region for window dragging", () => {
-    const { container } = render(<Toolbar entryCount={0} onAdd={() => {}} />);
+    const { container } = render(<Toolbar {...defaultProps} />);
     const dragRegions = container.querySelectorAll("[data-tauri-drag-region]");
     // header + traffic light zone + content row = 3 drag regions
     expect(dragRegions.length).toBe(3);
   });
 
   it("uses fixed positioning for sticky header", () => {
-    const { container } = render(<Toolbar entryCount={0} onAdd={() => {}} />);
+    const { container } = render(<Toolbar {...defaultProps} />);
     const header = container.querySelector("header");
     expect(header).toBeInTheDocument();
     expect(header?.className).toContain("fixed");
@@ -80,7 +84,7 @@ describe("Toolbar", () => {
   });
 
   it("has traffic light zone as first child", () => {
-    const { container } = render(<Toolbar entryCount={0} onAdd={() => {}} />);
+    const { container } = render(<Toolbar {...defaultProps} />);
     const header = container.querySelector("header");
     const trafficLightZone = header?.firstElementChild as HTMLElement;
     expect(trafficLightZone.className).toContain("h-[38px]");

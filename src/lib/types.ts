@@ -18,6 +18,8 @@ export interface AppSettings {
   backup_dir_name: string;
   webhook_port: number;
   webhook_token: string;
+  show_tray_icon: boolean;
+  autostart: boolean;
 }
 
 export interface SyncResult {

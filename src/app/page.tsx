@@ -1,14 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { DropZone } from "@/components/drop-zone";
 import { FileList } from "@/components/file-list";
+import { SettingsPage } from "@/components/settings-page";
 import { SyncButton } from "@/components/sync-button";
 import { SyncLog } from "@/components/sync-log";
 import { Toolbar } from "@/components/toolbar";
 import { useFileList } from "@/hooks/use-file-list";
 import { useSync } from "@/hooks/use-sync";
 
+type Page = "home" | "settings";
+
 export default function Home() {
+  const [page, setPage] = useState<Page>("home");
   const { entries, loading, isDragging, addViaDialog, remove, refresh } =
     useFileList();
   const { status, lastResult, error, sync } = useSync();
@@ -22,6 +27,10 @@ export default function Home() {
     }
   };
 
+  if (page === "settings") {
+    return <SettingsPage onBack={() => setPage("home")} />;
+  }
+
   if (loading) {
     return (
       <main className="flex h-screen items-center justify-center">
@@ -32,7 +41,11 @@ export default function Home() {
 
   return (
     <main className="flex h-screen flex-col pt-[74px]" onContextMenu={(e) => e.preventDefault()}>
-      <Toolbar entryCount={entries.length} onAdd={addViaDialog} />
+      <Toolbar
+        entryCount={entries.length}
+        onAdd={addViaDialog}
+        onSettings={() => setPage("settings")}
+      />
 
       <div className="flex flex-1 flex-col overflow-hidden">
         {entries.length > 0 ? (

@@ -34,8 +34,8 @@ Rules: imperative mood, lowercase, max 50 chars, no period
 
 ### Test commands
 ```bash
-bun run test          # vitest (frontend, 34 tests)
-bun run test:rs       # cargo test --lib (rust UT, 92 tests)
+bun run test          # vitest (frontend, 46 tests)
+bun run test:rs       # cargo test --lib (rust UT, 94 tests)
 bun run test:e2e:rs   # cargo test --tests (rust E2E, 12 tests)
 bun run test:all      # all of the above
 bun run lint          # eslint + clippy
@@ -46,10 +46,10 @@ bun run lint          # eslint + clippy
 - **pre-push**: `bun run test && bun run lint && bun run test:rs && bun run test:e2e:rs`
 
 ### Test distribution
-- Rust UT: 92 (types 10, error 4, commands 5, sync/filelist 13, sync/validation 23, sync/executor 16, sync/mod 4, webhook 4, sync status 5, gdrive detect 8)
+- Rust UT: 94 (types 12, error 4, commands 5, sync/filelist 13, sync/validation 23, sync/executor 16, sync/mod 4, webhook 4, sync status 5, gdrive detect 8)
 - Rust E2E: 12 (sync_e2e 7, webhook_e2e 5)
-- TS: 34 (utils 4, types 3, components 27)
-- **Total: 138**
+- TS: 46 (utils 4, types 3, components 39)
+- **Total: 152**
 
 ### Coverage target
 - Core sync logic: 95%+

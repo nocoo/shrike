@@ -31,3 +31,15 @@ export async function updateSettings(
 export async function triggerSync(): Promise<SyncResult> {
   return invoke<SyncResult>("trigger_sync");
 }
+
+export async function getAutostart(): Promise<boolean> {
+  return invoke<boolean>("get_autostart");
+}
+
+export async function setAutostart(enabled: boolean): Promise<void> {
+  return invoke<void>("set_autostart", { enabled });
+}
+
+export async function setTrayVisible(visible: boolean): Promise<void> {
+  return invoke<void>("set_tray_visible", { visible });
+}

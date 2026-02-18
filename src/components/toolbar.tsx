@@ -3,14 +3,14 @@
 import Image from "next/image";
 import { Plus, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SettingsDialog } from "@/components/settings-dialog";
 
 interface ToolbarProps {
   entryCount: number;
   onAdd: () => void;
+  onSettings: () => void;
 }
 
-export function Toolbar({ entryCount, onAdd }: ToolbarProps) {
+export function Toolbar({ entryCount, onAdd, onSettings }: ToolbarProps) {
   return (
     <header
       data-tauri-drag-region
@@ -42,11 +42,9 @@ export function Toolbar({ entryCount, onAdd }: ToolbarProps) {
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onAdd}>
             <Plus className="h-4 w-4" />
           </Button>
-          <SettingsDialog>
-            <Button variant="ghost" size="icon" className="h-7 w-7">
-              <Settings className="h-4 w-4" />
-            </Button>
-          </SettingsDialog>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onSettings}>
+            <Settings className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </header>
