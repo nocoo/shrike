@@ -34,7 +34,7 @@ Rules: imperative mood, lowercase, max 50 chars, no period
 
 ### Test commands
 ```bash
-bun run test          # vitest (frontend, 114 tests)
+bun run test          # vitest (frontend, 141 tests)
 bun run test:rs       # cargo test --lib (rust UT, 109 tests)
 bun run test:e2e:rs   # cargo test --tests (rust E2E, 12 tests)
 bun run test:all      # all of the above
@@ -48,8 +48,8 @@ bun run lint          # eslint + clippy
 ### Test distribution
 - Rust UT: 109 (types 12, error 4, commands 5, sync/filelist 13, sync/validation 23, sync/executor 16, sync/mod 4, webhook 4, sync status 5, gdrive detect 8, scan configs 7, scan tree 8)
 - Rust E2E: 12 (sync_e2e 7, webhook_e2e 5)
-- TS: 114 (utils 4, types 4, components 106)
-- **Total: 235**
+- TS: 141 (utils 4, types 4, components 133)
+- **Total: 262**
 
 ### Coverage target
 - Core sync logic: 95%+
@@ -94,3 +94,5 @@ sync/mod.rs         → Orchestrate: generate → validate → execute
 6. **Radix Collapsible content is NOT in the DOM when closed** — Tests that query for child elements inside a `<CollapsiblePrimitive.Content>` will fail if the collapsible is in its default closed state. Must programmatically click the trigger button to expand before asserting on children. This affects both `getByText` and `getAllByRole("checkbox")` counts.
 
 7. **Smart folding requires marking children as added too** — When `computePathsToAdd()` folds all children into a parent directory path and `addEntry(parentPath)` succeeds, the `added` map must also mark each child path as added. Otherwise `allAdded` (which checks selectable child paths) never becomes true, and the "Done" button never appears.
+
+8. **rsync `--files-from` disables implicit recursion** — Even though `-a` includes `-r`, using `--files-from` turns off recursive directory traversal. Directory entries in the filelist are created as empty directories. Must add explicit `-r` flag (i.e. `-avrR`) to restore recursion. This is a documented rsync behavior but easy to miss since `-a` normally implies `-r`.
