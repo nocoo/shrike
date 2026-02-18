@@ -6,13 +6,14 @@ import { DropZone } from "@/components/drop-zone";
 import { FileList } from "@/components/file-list";
 import { SettingsPage } from "@/components/settings-page";
 import { SyncButton } from "@/components/sync-button";
-import { SyncLog } from "@/components/sync-log";
+import { SyncLogPage } from "@/components/sync-log";
+import { SyncSummary } from "@/components/sync-summary";
 import { Toolbar } from "@/components/toolbar";
 import { WizardPage } from "@/components/wizard-page";
 import { useFileList } from "@/hooks/use-file-list";
 import { useSync } from "@/hooks/use-sync";
 
-type Page = "home" | "settings" | "wizard" | "about";
+type Page = "home" | "settings" | "wizard" | "about" | "sync-log";
 
 export default function Home() {
   const [page, setPage] = useState<Page>("home");
@@ -52,6 +53,16 @@ export default function Home() {
     );
   }
 
+  if (page === "sync-log") {
+    return (
+      <SyncLogPage
+        result={lastResult}
+        error={error}
+        onBack={() => setPage("home")}
+      />
+    );
+  }
+
   if (loading) {
     return (
       <main className="flex h-screen items-center justify-center">
@@ -80,11 +91,11 @@ export default function Home() {
 
       <DropZone isDragging={isDragging} hasEntries={entries.length > 0} />
 
-      {(lastResult || error) && (
-        <div className="border-t px-4 py-2">
-          <SyncLog result={lastResult} error={error} />
-        </div>
-      )}
+      <SyncSummary
+        result={lastResult}
+        error={error}
+        onViewLog={() => setPage("sync-log")}
+      />
 
       <SyncButton
         status={status}
