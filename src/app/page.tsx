@@ -35,7 +35,10 @@ export default function Home() {
   if (page === "wizard") {
     return (
       <WizardPage
-        onBack={() => setPage("home")}
+        onBack={() => {
+          refresh();
+          setPage("home");
+        }}
         onDone={() => {
           refresh();
           setPage("home");
