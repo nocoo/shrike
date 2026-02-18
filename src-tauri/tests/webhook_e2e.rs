@@ -38,6 +38,7 @@ fn webhook_sync_flow_success() {
     let settings = AppSettings {
         gdrive_path: dest_dir.path().to_str().unwrap().to_string(),
         backup_dir_name: "WebhookBackup".to_string(),
+        machine_name: "TestMac".to_string(),
         webhook_port: 0,
         webhook_token: "test-token".to_string(),
         show_tray_icon: true,
@@ -51,7 +52,11 @@ fn webhook_sync_flow_success() {
     assert!(result.is_success());
 
     // Verify file was backed up
-    let backup_path = format!("{}/WebhookBackup{}", dest_dir.path().display(), canonical);
+    let backup_path = format!(
+        "{}/WebhookBackup/TestMac{}",
+        dest_dir.path().display(),
+        canonical
+    );
     assert!(std::path::Path::new(&backup_path).exists());
     assert_eq!(fs::read_to_string(&backup_path).unwrap(), "webhook payload");
 }
@@ -61,6 +66,7 @@ fn webhook_sync_flow_empty_entries_error() {
     let settings = AppSettings {
         gdrive_path: "/tmp".to_string(),
         backup_dir_name: "Backup".to_string(),
+        machine_name: "TestMac".to_string(),
         webhook_port: 0,
         webhook_token: "token".to_string(),
         show_tray_icon: true,

@@ -45,6 +45,7 @@ mod tests {
         AppSettings {
             gdrive_path: dest.to_string(),
             backup_dir_name: "Backup".to_string(),
+            machine_name: "TestMac".to_string(),
             webhook_port: 0,
             webhook_token: "test".to_string(),
             show_tray_icon: true,
@@ -76,7 +77,11 @@ mod tests {
         assert!(result.is_success());
         assert_eq!(result.exit_code, 0);
 
-        let expected_path = format!("{}/Backup{}", dest_dir.path().display(), source_path);
+        let expected_path = format!(
+            "{}/Backup/TestMac{}",
+            dest_dir.path().display(),
+            source_path
+        );
         assert!(std::path::Path::new(&expected_path).exists());
 
         let content = fs::read_to_string(&expected_path).unwrap();
@@ -129,11 +134,11 @@ mod tests {
         // Verify both files exist in backup
         let dest = dest_dir.path().display();
         assert!(
-            std::path::Path::new(&format!("{dest}/Backup{file1_path}")).exists(),
+            std::path::Path::new(&format!("{dest}/Backup/TestMac{file1_path}")).exists(),
             "doc.md should be backed up"
         );
         assert!(
-            std::path::Path::new(&format!("{dest}/Backup{file2_path}")).exists(),
+            std::path::Path::new(&format!("{dest}/Backup/TestMac{file2_path}")).exists(),
             "notes.txt should be backed up"
         );
     }

@@ -186,6 +186,23 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                   }
                 />
               </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="machine-name">Machine Name</Label>
+                <Input
+                  id="machine-name"
+                  value={settings.machine_name}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      machine_name: e.target.value,
+                    })
+                  }
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Subfolder per device for multi-machine backup
+                </p>
+              </div>
             </section>
 
             {/* Webhook section */}

@@ -16,6 +16,7 @@ export interface BackupEntry {
 export interface AppSettings {
   gdrive_path: string;
   backup_dir_name: string;
+  machine_name: string;
   webhook_port: number;
   webhook_token: string;
   show_tray_icon: boolean;

@@ -30,6 +30,7 @@ fn test_settings(dest: &str) -> AppSettings {
     AppSettings {
         gdrive_path: dest.to_string(),
         backup_dir_name: "Backup".to_string(),
+        machine_name: "TestMac".to_string(),
         webhook_port: 0,
         webhook_token: "test".to_string(),
         show_tray_icon: true,
@@ -53,8 +54,8 @@ fn e2e_sync_single_file() {
     assert_eq!(result.exit_code, 0);
     assert!(result.files_transferred >= 1);
 
-    // Verify backup structure: <dest>/Backup/<full_source_path>
-    let backup_path = format!("{}/Backup{}", dest_dir.path().display(), file_path);
+    // Verify backup structure: <dest>/Backup/TestMac/<full_source_path>
+    let backup_path = format!("{}/Backup/TestMac{}", dest_dir.path().display(), file_path);
     assert!(
         std::path::Path::new(&backup_path).exists(),
         "expected file at {backup_path}"
@@ -97,7 +98,7 @@ fn e2e_sync_multiple_files_and_directories() {
         (&f3, "pub mod foo;"),
         (&f4, "[app]\nname = \"test\""),
     ] {
-        let backup_path = format!("{dest}/Backup{path}");
+        let backup_path = format!("{dest}/Backup/TestMac{path}");
         assert!(
             std::path::Path::new(&backup_path).exists(),
             "missing: {backup_path}"
@@ -130,8 +131,8 @@ fn e2e_sync_preserves_directory_structure() {
 
     // Verify the full directory path is preserved (rsync -R behavior)
     let dest = dest_dir.path().display();
-    let bp1 = format!("{dest}/Backup{f1}");
-    let bp2 = format!("{dest}/Backup{f2}");
+    let bp1 = format!("{dest}/Backup/TestMac{f1}");
+    let bp2 = format!("{dest}/Backup/TestMac{f2}");
     assert!(std::path::Path::new(&bp1).exists(), "missing: {bp1}");
     assert!(std::path::Path::new(&bp2).exists(), "missing: {bp2}");
 }
@@ -164,7 +165,7 @@ fn e2e_sync_incremental_no_rewrite() {
     );
 
     // Verify content is still correct
-    let backup_path = format!("{}/Backup{}", dest_dir.path().display(), f1);
+    let backup_path = format!("{}/Backup/TestMac{}", dest_dir.path().display(), f1);
     assert_eq!(fs::read_to_string(&backup_path).unwrap(), "original");
 }
 
@@ -199,11 +200,11 @@ fn e2e_sync_unicode_content_and_paths() {
 
     let dest = dest_dir.path().display();
     assert_eq!(
-        fs::read_to_string(format!("{dest}/Backup{f1}")).unwrap(),
+        fs::read_to_string(format!("{dest}/Backup/TestMac{f1}")).unwrap(),
         "こんにちは世界"
     );
     assert_eq!(
-        fs::read_to_string(format!("{dest}/Backup{f2}")).unwrap(),
+        fs::read_to_string(format!("{dest}/Backup/TestMac{f2}")).unwrap(),
         "# 你好世界"
     );
 }
@@ -227,7 +228,7 @@ fn e2e_sync_updates_detect_content_change() {
     let r1 = execute_sync(&entries, &settings).unwrap();
     assert!(r1.is_success());
 
-    let backup_path = format!("{}/Backup{}", dest_dir.path().display(), file_path);
+    let backup_path = format!("{}/Backup/TestMac{}", dest_dir.path().display(), file_path);
     assert_eq!(fs::read_to_string(&backup_path).unwrap(), "version 1");
 
     // Modify source — sleep 1s to ensure mtime differs

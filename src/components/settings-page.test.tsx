@@ -21,6 +21,7 @@ import { SettingsPage } from "./settings-page";
 const defaultSettings = {
   gdrive_path: "/Users/test/Library/CloudStorage/GoogleDrive-user@example.com/My Drive",
   backup_dir_name: "ShrikeBackup",
+  machine_name: "TestMac",
   webhook_port: 7022,
   webhook_token: "test-token",
   show_tray_icon: true,

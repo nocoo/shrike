@@ -90,6 +90,8 @@ pub fn default_cloud_storage_dir() -> Option<PathBuf> {
 pub struct AppSettings {
     pub gdrive_path: String,
     pub backup_dir_name: String,
+    #[serde(default = "default_machine_name")]
+    pub machine_name: String,
     pub webhook_port: u16,
     pub webhook_token: String,
     #[serde(default = "default_true")]
@@ -104,6 +106,14 @@ fn default_true() -> bool {
     true
 }
 
+/// Return the local machine's short hostname (e.g. "Mac", "MacBook-Pro").
+fn default_machine_name() -> String {
+    hostname::get()
+        .ok()
+        .and_then(|h| h.into_string().ok())
+        .unwrap_or_default()
+}
+
 impl Default for AppSettings {
     fn default() -> Self {
         let gdrive_path = default_cloud_storage_dir()
@@ -114,6 +124,7 @@ impl Default for AppSettings {
         Self {
             gdrive_path,
             backup_dir_name: String::from("ShrikeBackup"),
+            machine_name: default_machine_name(),
             webhook_port: 7022,
             webhook_token: Uuid::new_v4().to_string(),
             show_tray_icon: true,
@@ -124,9 +135,12 @@ impl Default for AppSettings {
 }
 
 impl AppSettings {
-    /// Full destination path for rsync: gdrive_path/backup_dir_name
+    /// Full destination path for rsync: gdrive_path/backup_dir_name/machine_name
     pub fn destination_path(&self) -> String {
-        format!("{}/{}", self.gdrive_path, self.backup_dir_name)
+        format!(
+            "{}/{}/{}",
+            self.gdrive_path, self.backup_dir_name, self.machine_name
+        )
     }
 }
 
@@ -394,6 +408,7 @@ mod tests {
         let settings = AppSettings::default();
         // gdrive_path is auto-detected; may be empty if Google Drive not installed
         assert_eq!(settings.backup_dir_name, "ShrikeBackup");
+        assert!(!settings.machine_name.is_empty()); // auto-detected hostname
         assert_eq!(settings.webhook_port, 7022);
         assert!(!settings.webhook_token.is_empty());
         assert!(settings.show_tray_icon);
@@ -406,13 +421,14 @@ mod tests {
         let settings = AppSettings {
             gdrive_path: "/mnt/gdrive".into(),
             backup_dir_name: "Backup".into(),
+            machine_name: "TestMac".into(),
             webhook_port: 8080,
             webhook_token: "token".into(),
             show_tray_icon: true,
             show_dock_icon: true,
             autostart: false,
         };
-        assert_eq!(settings.destination_path(), "/mnt/gdrive/Backup");
+        assert_eq!(settings.destination_path(), "/mnt/gdrive/Backup/TestMac");
     }
 
     #[test]
@@ -557,7 +573,7 @@ mod tests {
 
     #[test]
     fn app_settings_serde_defaults_for_new_fields() {
-        // Simulate loading old settings JSON that lacks show_tray_icon, show_dock_icon, and autostart
+        // Simulate loading old settings JSON that lacks machine_name, show_tray_icon, show_dock_icon, and autostart
         let json = r#"{
             "gdrive_path": "/some/path",
             "backup_dir_name": "Backup",
@@ -565,6 +581,7 @@ mod tests {
             "webhook_token": "abc"
         }"#;
         let settings: AppSettings = serde_json::from_str(json).unwrap();
+        assert!(!settings.machine_name.is_empty()); // default_machine_name
         assert!(settings.show_tray_icon); // default_true
         assert!(settings.show_dock_icon); // default_true
         assert!(!settings.autostart); // default false
@@ -575,6 +592,7 @@ mod tests {
         let settings = AppSettings {
             gdrive_path: "/test".into(),
             backup_dir_name: "B".into(),
+            machine_name: "M".into(),
             webhook_port: 9000,
             webhook_token: "tok".into(),
             show_tray_icon: false,
