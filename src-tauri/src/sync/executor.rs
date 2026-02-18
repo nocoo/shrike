@@ -12,10 +12,14 @@ use crate::types::SyncResult;
 
 /// Build the rsync command arguments.
 ///
-/// Command: `rsync -avR --files-from=<tmpfile> / <destination>/`
+/// Command: `rsync -avrR --files-from=<tmpfile> / <destination>/`
+///
+/// The explicit `-r` is required because `--files-from` disables the implicit
+/// recursion that `-a` normally provides. Without it, directory entries in the
+/// filelist are created as empty directories without their contents.
 pub fn build_rsync_args(files_from_path: &str, destination: &str) -> Vec<String> {
     vec![
-        "-avR".to_string(),
+        "-avrR".to_string(),
         format!("--files-from={files_from_path}"),
         "/".to_string(),
         format!("{destination}/"),
@@ -88,7 +92,7 @@ mod tests {
     fn build_rsync_args_correct_format() {
         let args = build_rsync_args("/tmp/filelist.txt", "/mnt/backup");
         assert_eq!(args.len(), 4);
-        assert_eq!(args[0], "-avR");
+        assert_eq!(args[0], "-avrR");
         assert_eq!(args[1], "--files-from=/tmp/filelist.txt");
         assert_eq!(args[2], "/");
         assert_eq!(args[3], "/mnt/backup/");
