@@ -11,10 +11,14 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.1.2-blue" alt="Version">
   <img src="https://img.shields.io/badge/platform-macOS-lightgrey" alt="Platform">
-  <img src="https://img.shields.io/badge/tests-186%20passing-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-268%20passing-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+</p>
+
+<p align="center">
+  <img src="https://s.zhe.to/dcd0e6e42358/20260218/3263524f-8236-47a1-9fe0-9418f45c4002.jpg" width="380" alt="Shrike Preview">
 </p>
 
 ---
@@ -36,10 +40,12 @@ Shrike is a lightweight macOS app that lets you pick specific files and folders 
 - **Quick Add wizard** -- scan and batch-add coding agent configs (.claude, .cursor, .aider, etc.)
 - **Incremental sync** -- rsync only transfers what changed
 - **Full path preservation** -- `rsync -avR` keeps your directory structure intact
+- **Dark mode** -- auto-detect system preference, or manually choose light/dark
+- **i18n** -- English and Chinese UI, auto-detect or manually set
 - **Webhook trigger** -- automate backups via `POST http://localhost:7022/sync`
 - **Dock & menu bar control** -- hide from Dock and/or menu bar as needed
 - **Launch at login** -- optional autostart on macOS login
-- **Portable data** -- settings stored in a single JSON file
+- **Per-device subfolder** -- separate backup directories via machine name setting
 
 ## Install
 
@@ -99,13 +105,13 @@ macOS rsync -> Google Drive (local mount)
 
 ## Testing
 
-186 automated tests across three layers:
+268 automated tests across three layers:
 
 | Layer | Tool | Count |
 | ----- | ---- | ----- |
-| Rust UT | `cargo test` | 101 |
+| Rust UT | `cargo test` | 109 |
 | Rust E2E | `cargo test --tests` | 12 |
-| TS UT/Component | `vitest` | 73 |
+| TS UT/Component | `vitest` | 147 |
 
 ```bash
 # Run everything
@@ -127,7 +133,9 @@ bun run lint
 shrike/
 ├── src/                    # Next.js frontend
 │   ├── components/         # UI components (shadcn/ui based)
-│   └── lib/                # Types, utils, Tauri command wrappers
+│   ├── hooks/              # Custom React hooks
+│   ├── lib/                # Types, utils, i18n, Tauri command wrappers
+│   └── test/               # Test utilities (renderWithLocale)
 ├── src-tauri/
 │   ├── src/
 │   │   ├── sync/           # Three-layer sync pipeline
@@ -139,7 +147,7 @@ shrike/
 │   │   ├── types.rs        # Shared data types
 │   │   └── error.rs        # Error definitions
 │   └── tests/              # E2E integration tests
-└── docs/                   # Documentation
+└── CHANGELOG.md
 ```
 
 ## License
