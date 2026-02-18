@@ -22,11 +22,13 @@ describe("types", () => {
       webhook_port: 7022,
       webhook_token: "test-token",
       show_tray_icon: true,
+      show_dock_icon: true,
       autostart: false,
     };
     expect(settings.webhook_port).toBe(7022);
     expect(settings.backup_dir_name).toBe("ShrikeBackup");
     expect(settings.show_tray_icon).toBe(true);
+    expect(settings.show_dock_icon).toBe(true);
     expect(settings.autostart).toBe(false);
   });
 

@@ -201,6 +201,23 @@ pub fn set_tray_visible(app: AppHandle, visible: bool) -> Result<()> {
     Ok(())
 }
 
+/// Show or hide the Dock icon (macOS only).
+#[tauri::command]
+pub fn set_dock_visible(app: AppHandle, visible: bool) -> Result<()> {
+    #[cfg(target_os = "macos")]
+    app.set_activation_policy(if visible {
+        tauri::ActivationPolicy::Regular
+    } else {
+        tauri::ActivationPolicy::Accessory
+    })
+    .map_err(|e| ShrikeError::StoreError(e.to_string()))?;
+    // Persist in settings
+    let mut settings = get_settings(app.clone())?;
+    settings.show_dock_icon = visible;
+    update_settings(app, settings)?;
+    Ok(())
+}
+
 /// Scan the user's home directory for known coding agent configurations.
 #[tauri::command]
 pub fn scan_coding_configs() -> Result<Vec<DetectedConfig>> {

@@ -32,6 +32,7 @@ pub fn run() {
             commands::get_autostart,
             commands::set_autostart,
             commands::set_tray_visible,
+            commands::set_dock_visible,
             commands::scan_coding_configs,
         ])
         .setup(|app| {
@@ -93,6 +94,14 @@ pub fn run() {
                 && let Some(tray) = app.tray_by_id("main-tray")
             {
                 let _ = tray.set_visible(false);
+            }
+
+            // Apply dock icon visibility from settings
+            if !settings.show_dock_icon {
+                #[cfg(target_os = "macos")]
+                let _ = app
+                    .handle()
+                    .set_activation_policy(tauri::ActivationPolicy::Accessory);
             }
 
             // Close-to-tray: hide window instead of destroying it

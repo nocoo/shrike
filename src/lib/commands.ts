@@ -44,6 +44,10 @@ export async function setTrayVisible(visible: boolean): Promise<void> {
   return invoke<void>("set_tray_visible", { visible });
 }
 
+export async function setDockVisible(visible: boolean): Promise<void> {
+  return invoke<void>("set_dock_visible", { visible });
+}
+
 export async function scanCodingConfigs(): Promise<DetectedConfig[]> {
   return invoke<DetectedConfig[]>("scan_coding_configs");
 }

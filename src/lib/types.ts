@@ -19,6 +19,7 @@ export interface AppSettings {
   webhook_port: number;
   webhook_token: string;
   show_tray_icon: boolean;
+  show_dock_icon: boolean;
   autostart: boolean;
 }
 

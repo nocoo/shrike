@@ -94,6 +94,8 @@ pub struct AppSettings {
     pub webhook_token: String,
     #[serde(default = "default_true")]
     pub show_tray_icon: bool,
+    #[serde(default = "default_true")]
+    pub show_dock_icon: bool,
     #[serde(default)]
     pub autostart: bool,
 }
@@ -115,6 +117,7 @@ impl Default for AppSettings {
             webhook_port: 7022,
             webhook_token: Uuid::new_v4().to_string(),
             show_tray_icon: true,
+            show_dock_icon: true,
             autostart: false,
         }
     }
@@ -260,6 +263,7 @@ mod tests {
         assert_eq!(settings.webhook_port, 7022);
         assert!(!settings.webhook_token.is_empty());
         assert!(settings.show_tray_icon);
+        assert!(settings.show_dock_icon);
         assert!(!settings.autostart);
     }
 
@@ -271,6 +275,7 @@ mod tests {
             webhook_port: 8080,
             webhook_token: "token".into(),
             show_tray_icon: true,
+            show_dock_icon: true,
             autostart: false,
         };
         assert_eq!(settings.destination_path(), "/mnt/gdrive/Backup");
@@ -418,7 +423,7 @@ mod tests {
 
     #[test]
     fn app_settings_serde_defaults_for_new_fields() {
-        // Simulate loading old settings JSON that lacks show_tray_icon and autostart
+        // Simulate loading old settings JSON that lacks show_tray_icon, show_dock_icon, and autostart
         let json = r#"{
             "gdrive_path": "/some/path",
             "backup_dir_name": "Backup",
@@ -427,6 +432,7 @@ mod tests {
         }"#;
         let settings: AppSettings = serde_json::from_str(json).unwrap();
         assert!(settings.show_tray_icon); // default_true
+        assert!(settings.show_dock_icon); // default_true
         assert!(!settings.autostart); // default false
     }
 
@@ -438,12 +444,14 @@ mod tests {
             webhook_port: 9000,
             webhook_token: "tok".into(),
             show_tray_icon: false,
+            show_dock_icon: false,
             autostart: true,
         };
         let json = serde_json::to_string(&settings).unwrap();
         let deserialized: AppSettings = serde_json::from_str(&json).unwrap();
         assert_eq!(settings, deserialized);
         assert!(!deserialized.show_tray_icon);
+        assert!(!deserialized.show_dock_icon);
         assert!(deserialized.autostart);
     }
 

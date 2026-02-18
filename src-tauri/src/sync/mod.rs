@@ -48,6 +48,7 @@ mod tests {
             webhook_port: 0,
             webhook_token: "test".to_string(),
             show_tray_icon: true,
+            show_dock_icon: true,
             autostart: false,
         }
     }
