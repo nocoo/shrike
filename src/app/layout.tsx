@@ -13,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body onContextMenu={(e) => e.preventDefault()}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }
