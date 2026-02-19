@@ -9,14 +9,48 @@ pub mod executor;
 pub mod filelist;
 pub mod validation;
 
-use crate::error::Result;
+use std::sync::atomic::{AtomicBool, Ordering};
+
+use crate::error::{Result, ShrikeError};
 use crate::types::{AppSettings, BackupEntry, SyncResult};
+
+/// Global lock to prevent concurrent rsync runs.
+///
+/// Both the Tauri IPC `trigger_sync` command and the webhook `POST /sync`
+/// handler go through `execute_sync`, so a single atomic flag is sufficient
+/// to serialize all sync operations.
+static SYNC_RUNNING: AtomicBool = AtomicBool::new(false);
+
+/// Returns true if a sync operation is currently in progress.
+pub fn is_sync_running() -> bool {
+    SYNC_RUNNING.load(Ordering::Relaxed)
+}
 
 /// Execute the full sync pipeline: generate filelist, validate, run rsync.
 ///
 /// This is the main entry point used by commands and webhook handlers.
+/// Only one sync operation can run at a time — concurrent calls are
+/// rejected with `ShrikeError::SyncFailed`.
 pub fn execute_sync(entries: &[BackupEntry], settings: &AppSettings) -> Result<SyncResult> {
-    let destination = settings.destination_path();
+    // Acquire the sync lock (compare-and-swap false → true)
+    if SYNC_RUNNING
+        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+        .is_err()
+    {
+        return Err(ShrikeError::SyncFailed(
+            "a sync operation is already in progress".to_string(),
+        ));
+    }
+
+    // Ensure we always release the lock, even on error/panic
+    let result = execute_sync_inner(entries, settings);
+    SYNC_RUNNING.store(false, Ordering::SeqCst);
+    result
+}
+
+/// Inner sync logic, separated so the lock guard in `execute_sync` stays clean.
+fn execute_sync_inner(entries: &[BackupEntry], settings: &AppSettings) -> Result<SyncResult> {
+    let destination = settings.destination_path()?;
 
     // Layer 1: Generate filelist
     let filelist_file = filelist::generate_filelist(entries)?;
@@ -59,7 +93,7 @@ mod tests {
     #[test]
     fn execute_sync_empty_entries_fails() {
         let settings = test_settings("/tmp/test_gdrive");
-        let result = execute_sync(&[], &settings);
+        let result = execute_sync_inner(&[], &settings);
         assert!(result.is_err());
         assert!(result.unwrap_err().to_string().contains("no entries"));
     }
@@ -74,7 +108,7 @@ mod tests {
         let source_path = source.path().to_str().unwrap().to_string();
 
         let entries = vec![BackupEntry::new(source_path.clone(), ItemType::File)];
-        let result = execute_sync(&entries, &settings).unwrap();
+        let result = execute_sync_inner(&entries, &settings).unwrap();
 
         assert!(result.is_success());
         assert_eq!(result.exit_code, 0);
@@ -99,7 +133,7 @@ mod tests {
             "/nonexistent/file_abc123.txt".into(),
             ItemType::File,
         )];
-        let result = execute_sync(&entries, &settings);
+        let result = execute_sync_inner(&entries, &settings);
         assert!(result.is_err());
     }
 
@@ -130,7 +164,7 @@ mod tests {
             BackupEntry::new(file2_path.clone(), ItemType::File),
         ];
 
-        let result = execute_sync(&entries, &settings).unwrap();
+        let result = execute_sync_inner(&entries, &settings).unwrap();
         assert!(result.is_success());
 
         // Verify both files exist in backup
@@ -143,5 +177,33 @@ mod tests {
             std::path::Path::new(&format!("{dest}/Backup/TestMac{file2_path}")).exists(),
             "notes.txt should be backed up"
         );
+    }
+
+    #[test]
+    fn execute_sync_rejects_concurrent_runs() {
+        // Simulate a lock being held by setting the flag manually
+        SYNC_RUNNING.store(true, Ordering::SeqCst);
+
+        let settings = test_settings("/tmp/test_gdrive");
+        let entries = vec![BackupEntry::new("/etc/hosts".into(), ItemType::File)];
+        let result = execute_sync(&entries, &settings);
+
+        // Must release the lock before asserting, so other tests aren't affected
+        SYNC_RUNNING.store(false, Ordering::SeqCst);
+
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("already in progress"));
+    }
+
+    #[test]
+    fn is_sync_running_reflects_state() {
+        assert!(!is_sync_running());
+        SYNC_RUNNING.store(true, Ordering::SeqCst);
+        assert!(is_sync_running());
+        SYNC_RUNNING.store(false, Ordering::SeqCst);
+        assert!(!is_sync_running());
     }
 }

@@ -71,12 +71,16 @@ async fn status_handler(
     }
 
     let items = load_items(&state.app).unwrap_or_default();
+    let destination = match settings.destination_path() {
+        Ok(d) => d,
+        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))),
+    };
     (
         StatusCode::OK,
         Json(json!({
             "status": SyncStatus::Idle,
             "entries_count": items.len(),
-            "destination": settings.destination_path(),
+            "destination": destination,
         })),
     )
 }

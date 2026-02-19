@@ -2,7 +2,9 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
+
+use crate::error::ShrikeError;
 
 /// The type of a backup entry (file or directory).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -146,11 +148,54 @@ impl Default for AppSettings {
 
 impl AppSettings {
     /// Full destination path for rsync: gdrive_path/backup_dir_name/machine_name
-    pub fn destination_path(&self) -> String {
-        format!(
+    ///
+    /// Returns an error if:
+    /// - `gdrive_path` is empty (Google Drive not detected)
+    /// - `backup_dir_name` or `machine_name` contain path traversal (`..`)
+    ///   or path separators (`/`)
+    pub fn destination_path(&self) -> Result<String, ShrikeError> {
+        if self.gdrive_path.is_empty() {
+            return Err(ShrikeError::SyncFailed(
+                "Google Drive path is not configured".to_string(),
+            ));
+        }
+
+        // Sanitize backup_dir_name: must be a single, safe path component
+        Self::validate_path_component(&self.backup_dir_name, "backup directory name")?;
+        // Sanitize machine_name: must be a single, safe path component
+        Self::validate_path_component(&self.machine_name, "machine name")?;
+
+        Ok(format!(
             "{}/{}/{}",
             self.gdrive_path, self.backup_dir_name, self.machine_name
-        )
+        ))
+    }
+
+    /// Validate that a string is a safe, single path component.
+    ///
+    /// Rejects empty strings, path separators, `..` traversal, and
+    /// any component that is not a normal filename.
+    fn validate_path_component(value: &str, field_name: &str) -> Result<(), ShrikeError> {
+        if value.is_empty() {
+            return Err(ShrikeError::SyncFailed(format!(
+                "{field_name} cannot be empty"
+            )));
+        }
+
+        // Must be a single normal component (no `/`, `..`, `.`)
+        let path = Path::new(value);
+        let components: Vec<Component> = path.components().collect();
+        if components.len() != 1 {
+            return Err(ShrikeError::SyncFailed(format!(
+                "{field_name} contains path separators: {value}"
+            )));
+        }
+        match components[0] {
+            Component::Normal(_) => Ok(()),
+            _ => Err(ShrikeError::SyncFailed(format!(
+                "{field_name} contains invalid path component: {value}"
+            ))),
+        }
     }
 }
 
@@ -444,7 +489,100 @@ mod tests {
             theme: "auto".into(),
             language: "auto".into(),
         };
-        assert_eq!(settings.destination_path(), "/mnt/gdrive/Backup/TestMac");
+        assert_eq!(
+            settings.destination_path().unwrap(),
+            "/mnt/gdrive/Backup/TestMac"
+        );
+    }
+
+    #[test]
+    fn destination_path_rejects_empty_gdrive() {
+        let settings = AppSettings {
+            gdrive_path: String::new(),
+            backup_dir_name: "Backup".into(),
+            machine_name: "TestMac".into(),
+            webhook_port: 7022,
+            webhook_token: "token".into(),
+            show_tray_icon: true,
+            show_dock_icon: true,
+            autostart: false,
+            theme: "auto".into(),
+            language: "auto".into(),
+        };
+        let err = settings.destination_path().unwrap_err();
+        assert!(err.to_string().contains("Google Drive path"));
+    }
+
+    #[test]
+    fn destination_path_rejects_traversal_in_backup_dir() {
+        let settings = AppSettings {
+            gdrive_path: "/mnt/gdrive".into(),
+            backup_dir_name: "../etc".into(),
+            machine_name: "TestMac".into(),
+            webhook_port: 7022,
+            webhook_token: "token".into(),
+            show_tray_icon: true,
+            show_dock_icon: true,
+            autostart: false,
+            theme: "auto".into(),
+            language: "auto".into(),
+        };
+        let err = settings.destination_path().unwrap_err();
+        assert!(err.to_string().contains("path separators"));
+    }
+
+    #[test]
+    fn destination_path_rejects_traversal_in_machine_name() {
+        let settings = AppSettings {
+            gdrive_path: "/mnt/gdrive".into(),
+            backup_dir_name: "Backup".into(),
+            machine_name: "../../root".into(),
+            webhook_port: 7022,
+            webhook_token: "token".into(),
+            show_tray_icon: true,
+            show_dock_icon: true,
+            autostart: false,
+            theme: "auto".into(),
+            language: "auto".into(),
+        };
+        let err = settings.destination_path().unwrap_err();
+        assert!(err.to_string().contains("path separators"));
+    }
+
+    #[test]
+    fn destination_path_rejects_slash_in_backup_dir() {
+        let settings = AppSettings {
+            gdrive_path: "/mnt/gdrive".into(),
+            backup_dir_name: "back/up".into(),
+            machine_name: "TestMac".into(),
+            webhook_port: 7022,
+            webhook_token: "token".into(),
+            show_tray_icon: true,
+            show_dock_icon: true,
+            autostart: false,
+            theme: "auto".into(),
+            language: "auto".into(),
+        };
+        let err = settings.destination_path().unwrap_err();
+        assert!(err.to_string().contains("path separators"));
+    }
+
+    #[test]
+    fn destination_path_rejects_dotdot_machine_name() {
+        let settings = AppSettings {
+            gdrive_path: "/mnt/gdrive".into(),
+            backup_dir_name: "Backup".into(),
+            machine_name: "..".into(),
+            webhook_port: 7022,
+            webhook_token: "token".into(),
+            show_tray_icon: true,
+            show_dock_icon: true,
+            autostart: false,
+            theme: "auto".into(),
+            language: "auto".into(),
+        };
+        let err = settings.destination_path().unwrap_err();
+        assert!(err.to_string().contains("invalid path component"));
     }
 
     #[test]

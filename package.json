@@ -10,7 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:rs": "cargo test --manifest-path src-tauri/Cargo.toml --lib",
-    "test:e2e:rs": "cargo test --manifest-path src-tauri/Cargo.toml --tests",
+    "test:e2e:rs": "cargo test --manifest-path src-tauri/Cargo.toml --tests -- --test-threads=1",
     "test:e2e": "bun run test:e2e:rs",
     "test:all": "bun run test && bun run test:rs && bun run test:e2e:rs",
     "lint": "eslint src/ && cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings",
