@@ -78,7 +78,7 @@ async fn status_handler(
     (
         StatusCode::OK,
         Json(json!({
-            "status": SyncStatus::Idle,
+            "status": if sync::is_sync_running() { SyncStatus::Running } else { SyncStatus::Idle },
             "entries_count": items.len(),
             "destination": destination,
         })),
