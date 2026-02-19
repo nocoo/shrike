@@ -16,25 +16,34 @@ const STORE_FILE: &str = "shrike_data.json";
 const ITEMS_KEY: &str = "items";
 const SETTINGS_KEY: &str = "settings";
 
-/// Shared state for the webhook server — just the Tauri AppHandle.
+/// Abstraction over the data layer so handlers can be tested without
+/// a real Tauri runtime.
+pub trait DataStore: Clone + Send + Sync + 'static {
+    fn load_settings(&self) -> Result<AppSettings, String>;
+    fn load_items(&self) -> Result<Vec<BackupEntry>, String>;
+}
+
+/// Production implementation backed by the Tauri plugin-store.
 #[derive(Clone)]
-struct WebhookState {
+struct TauriStore {
     app: AppHandle,
 }
 
-fn load_settings(app: &AppHandle) -> Result<AppSettings, String> {
-    let store = app.store(STORE_FILE).map_err(|e| e.to_string())?;
-    match store.get(SETTINGS_KEY) {
-        Some(val) => serde_json::from_value(val).map_err(|e| e.to_string()),
-        None => Ok(AppSettings::default()),
+impl DataStore for TauriStore {
+    fn load_settings(&self) -> Result<AppSettings, String> {
+        let store = self.app.store(STORE_FILE).map_err(|e| e.to_string())?;
+        match store.get(SETTINGS_KEY) {
+            Some(val) => serde_json::from_value(val).map_err(|e| e.to_string()),
+            None => Ok(AppSettings::default()),
+        }
     }
-}
 
-fn load_items(app: &AppHandle) -> Result<Vec<BackupEntry>, String> {
-    let store = app.store(STORE_FILE).map_err(|e| e.to_string())?;
-    match store.get(ITEMS_KEY) {
-        Some(val) => serde_json::from_value(val).map_err(|e| e.to_string()),
-        None => Ok(Vec::new()),
+    fn load_items(&self) -> Result<Vec<BackupEntry>, String> {
+        let store = self.app.store(STORE_FILE).map_err(|e| e.to_string())?;
+        match store.get(ITEMS_KEY) {
+            Some(val) => serde_json::from_value(val).map_err(|e| e.to_string()),
+            None => Ok(Vec::new()),
+        }
     }
 }
 
@@ -57,11 +66,11 @@ fn validate_token(headers: &HeaderMap, expected_token: &str) -> Result<(), Statu
 }
 
 /// GET /status — returns current sync status.
-async fn status_handler(
-    State(state): State<WebhookState>,
+async fn status_handler<S: DataStore>(
+    State(store): State<S>,
     headers: HeaderMap,
 ) -> impl IntoResponse {
-    let settings = match load_settings(&state.app) {
+    let settings = match store.load_settings() {
         Ok(s) => s,
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e}))),
     };
@@ -70,10 +79,15 @@ async fn status_handler(
         return (status, Json(json!({"error": "unauthorized"})));
     }
 
-    let items = load_items(&state.app).unwrap_or_default();
+    let items = store.load_items().unwrap_or_default();
     let destination = match settings.destination_path() {
         Ok(d) => d,
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))),
+        Err(e) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"error": e.to_string()})),
+            )
+        }
     };
     (
         StatusCode::OK,
@@ -86,11 +100,11 @@ async fn status_handler(
 }
 
 /// POST /sync — triggers a sync operation.
-async fn sync_handler(
-    State(state): State<WebhookState>,
+async fn sync_handler<S: DataStore>(
+    State(store): State<S>,
     headers: HeaderMap,
 ) -> impl IntoResponse {
-    let settings = match load_settings(&state.app) {
+    let settings = match store.load_settings() {
         Ok(s) => s,
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e}))),
     };
@@ -99,7 +113,7 @@ async fn sync_handler(
         return (status, Json(json!({"error": "unauthorized"})));
     }
 
-    let entries = match load_items(&state.app) {
+    let entries = match store.load_items() {
         Ok(items) => items,
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e}))),
     };
@@ -120,14 +134,21 @@ async fn sync_handler(
     }
 }
 
+/// Build the webhook router with the given data store.
+///
+/// Exposed publicly so integration tests can build a router with a mock store
+/// and exercise the handlers via `tower::ServiceExt::oneshot`.
+pub fn build_router<S: DataStore>(store: S) -> Router {
+    Router::new()
+        .route("/status", get(status_handler::<S>))
+        .route("/sync", post(sync_handler::<S>))
+        .with_state(store)
+}
+
 /// Start the webhook server in a background task.
 pub fn start_webhook_server(app: AppHandle, port: u16) {
-    let state = WebhookState { app };
-
-    let router = Router::new()
-        .route("/status", get(status_handler))
-        .route("/sync", post(sync_handler))
-        .with_state(state);
+    let store = TauriStore { app };
+    let router = build_router(store);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
 

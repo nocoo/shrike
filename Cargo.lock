@@ -3228,6 +3228,7 @@ dependencies = [
  "chrono",
  "dirs 6.0.0",
  "hostname",
+ "http-body-util",
  "objc2",
  "objc2-app-kit",
  "objc2-foundation",
@@ -3242,6 +3243,7 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.18",
  "tokio",
+ "tower",
  "uuid",
 ]
 

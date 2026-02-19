@@ -13,11 +13,13 @@
 ### Current version: 0.1.2
 
 Version is tracked in three files (keep in sync):
+
 - `package.json` → `"version": "0.1.2"`
 - `src-tauri/Cargo.toml` → `version = "0.1.2"`
 - `src-tauri/tauri.conf.json` → `"version": "0.1.2"`
 
 ### Release process
+
 1. Update version in all three files
 2. Update `CHANGELOG.md`
 3. `git commit -m "chore: release v<version>"`
@@ -26,6 +28,7 @@ Version is tracked in three files (keep in sync):
 6. `gh release create v<version> --title "v<version>"`
 
 ### Commit convention
+
 Conventional Commits: `<type>: <description>`
 Types: feat, fix, docs, test, refactor, chore
 Rules: imperative mood, lowercase, max 50 chars, no period
@@ -33,31 +36,36 @@ Rules: imperative mood, lowercase, max 50 chars, no period
 ## Testing
 
 ### Test commands
+
 ```bash
 bun run test          # vitest (frontend, 147 tests)
-bun run test:rs       # cargo test --lib (rust UT, 109 tests)
-bun run test:e2e:rs   # cargo test --tests (rust E2E, 12 tests)
+bun run test:rs       # cargo test --lib (rust UT, 116 tests)
+bun run test:e2e:rs   # cargo test --tests (rust E2E, 26 tests)
 bun run test:all      # all of the above
 bun run lint          # eslint + clippy
 ```
 
 ### Git hooks (husky)
+
 - **pre-commit**: `bun run test && bun run test:rs && bun run lint`
 - **pre-push**: `bun run test && bun run lint && bun run test:rs && bun run test:e2e:rs`
 
 ### Test distribution
-- Rust UT: 109 (types 12, error 4, commands 5, sync/filelist 13, sync/validation 23, sync/executor 16, sync/mod 4, webhook 4, sync status 5, gdrive detect 8, scan configs 7, scan tree 8)
-- Rust E2E: 12 (sync_e2e 7, webhook_e2e 5)
+
+- Rust UT: 116 (types 12, error 4, commands 5, sync/filelist 13, sync/validation 23, sync/executor 16, sync/mod 6, webhook 4, sync status 5, gdrive detect 8, scan configs 7, scan tree 8, path sanitization 5)
+- Rust E2E: 26 (sync_e2e 7, webhook_e2e 19)
 - TS: 147 (utils 4, types 4, components 139)
-- **Total: 268**
+- **Total: 289**
 
 ### Coverage target
+
 - Core sync logic: 95%+
 - Overall: 90%+
 
 ## Architecture Notes
 
 ### Sync pipeline (three layers)
+
 ```
 sync/filelist.rs    → Generate --files-from temp file
 sync/validation.rs  → Validate paths, check destination
@@ -66,26 +74,31 @@ sync/mod.rs         → Orchestrate: generate → validate → execute
 ```
 
 ### Key API paths
+
 - `commands.rs` → Tauri IPC: add_entry, remove_entry, list_entries, get_settings, update_settings, trigger_sync, scan_coding_configs, scan_coding_configs_tree
 - `webhook.rs` → HTTP: GET /status, POST /sync (both require Bearer token)
 
 ### i18n system (self-built, zero dependencies)
+
 ```
 src/lib/i18n.tsx       → Translation dicts (en/zh, 75+ keys), LocaleProvider, useLocale hook
 src/app/providers.tsx  → Client component wrapping ThemeProvider + LocaleProvider
 src/test/test-utils.tsx → renderWithLocale() test helper
 ```
+
 - `resolveLocale("auto")` → detects via `navigator.language`, falls back to `"en"` in test env
 - Pluralization helpers: `pluralizeItems`, `pluralizeFiles`, `pluralizeDirs`, `formatSynced`, `formatAddToSyncList`, `formatInstalledCli`, `formatDialogTitle`
 - `formatHeader(result, error, t, locale)` — shared by sync-log and sync-summary
 
 ### Theme system (next-themes)
+
 - `next-themes` ThemeProvider with `attribute="class"` in `providers.tsx`
 - CSS dark mode already in `globals.css`: `:root` (light) + `.dark` (dark) variable blocks
 - Tailwind v4 dark variant: `@custom-variant dark (&:is(.dark *));`
 - Settings maps `"auto"` → next-themes `"system"`
 
 ### AppSettings (10 fields)
+
 When adding a field, update ALL fixtures: `types.rs` (2), `sync/mod.rs` (1), `sync_e2e.rs` (1), `webhook_e2e.rs` (2), `types.test.ts` (1), `settings-page.test.tsx` (1)
 
 ## Known Issues & Gotchas
@@ -119,3 +132,5 @@ When adding a field, update ALL fixtures: `types.rs` (2), `sync/mod.rs` (1), `sy
 9. **Never hardcode version strings in UI** — About page had `"v0.1.0"` hardcoded, which went stale when we released v0.1.1. The test also hardcoded the same string, so it passed despite the mismatch. Use `getVersion()` from `@tauri-apps/api/app` which reads from `tauri.conf.json` at runtime — single source of truth.
 
 10. **macOS `set_activation_policy(Accessory)` hides all windows** — Toggling dock visibility via `NSApplication.setActivationPolicy` to `Accessory` removes the dock icon but also hides all app windows as a side effect. Must explicitly call `window.show()` + `window.set_focus()` after the policy change. Additionally, switching back to `Regular` shows a generic icon — must call `NSApplication.setApplicationIconImage:` with the bundled icon to restore it. Use `objc2` crate (not deprecated `cocoa` crate).
+
+11. **Use trait abstraction to test Tauri handlers without a runtime** — Webhook handlers depended on `AppHandle` for store access, making real HTTP integration tests impossible without a full Tauri runtime. Solution: extract a `DataStore` trait with `load_settings()` / `load_items()`, make handlers generic over `S: DataStore`, and expose `build_router<S>()`. Tests use a `MockStore` impl + `tower::ServiceExt::oneshot()` to send real HTTP requests through the axum router — no TCP binding or Tauri runtime needed.

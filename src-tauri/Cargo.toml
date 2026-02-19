@@ -28,5 +28,9 @@ objc2 = "0.6"
 objc2-foundation = "0.3"
 objc2-app-kit = { version = "0.3", features = ["NSApplication", "NSImage", "NSRunningApplication"] }
 
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"
+
 [features]
 custom-protocol = ["tauri/custom-protocol"]
