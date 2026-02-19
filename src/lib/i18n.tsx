@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useMemo } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import type { Language } from "@/lib/types";
 
 // ─── Translation keys ────────────────────────────────────────────
@@ -84,8 +90,15 @@ const en = {
   // File list
   "fileList.other": "Other",
 
+  // Errors
+  "error.addFailed": "Failed to add item",
+  "error.loadFailed": "Failed to load data",
+  "error.saveFailed": "Failed to save settings",
+  "error.scanFailed": "Failed to scan configs",
+  "error.settingFailed": "Failed to update setting",
+
   // Loading
-  "loading": "Loading...",
+  loading: "Loading...",
 } as const;
 
 const zh: Record<TranslationKey, string> = {
@@ -165,8 +178,15 @@ const zh: Record<TranslationKey, string> = {
   // File list
   "fileList.other": "其他",
 
+  // Errors
+  "error.addFailed": "添加项目失败",
+  "error.loadFailed": "加载数据失败",
+  "error.saveFailed": "保存设置失败",
+  "error.scanFailed": "扫描配置失败",
+  "error.settingFailed": "更新设置失败",
+
   // Loading
-  "loading": "加载中...",
+  loading: "加载中...",
 };
 
 // ─── Pluralization helpers ───────────────────────────────────────
@@ -215,7 +235,10 @@ export function formatSynced(
 /**
  * Format wizard "Add N to Sync List" button text.
  */
-export function formatAddToSyncList(count: number, locale: "en" | "zh"): string {
+export function formatAddToSyncList(
+  count: number,
+  locale: "en" | "zh"
+): string {
   if (locale === "zh") return `添加 ${count} 项到同步列表`;
   return `Add ${count} to Sync List`;
 }
@@ -231,7 +254,10 @@ export function formatInstalledCli(count: number, locale: "en" | "zh"): string {
 /**
  * Format dialog title for file picker.
  */
-export function formatDialogTitle(directory: boolean, locale: "en" | "zh"): string {
+export function formatDialogTitle(
+  directory: boolean,
+  locale: "en" | "zh"
+): string {
   if (locale === "zh") {
     return directory ? "选择要备份的文件夹" : "选择要备份的文件";
   }
@@ -285,12 +311,12 @@ export function LocaleProvider({
 
   const t = useCallback(
     (key: TranslationKey) => translations[locale][key] ?? key,
-    [locale],
+    [locale]
   );
 
   const value = useMemo<LocaleContextValue>(
     () => ({ locale, t, setLanguage }),
-    [locale, t],
+    [locale, t]
   );
 
   return (

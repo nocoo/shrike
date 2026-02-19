@@ -12,6 +12,7 @@ import {
   File,
 } from "lucide-react";
 import { Collapsible as CollapsiblePrimitive } from "radix-ui";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { scanCodingConfigsTree, addEntry } from "@/lib/commands";
 import { useLocale, formatInstalledCli, formatAddToSyncList } from "@/lib/i18n";
@@ -81,7 +82,10 @@ const SKIP_PATTERNS = [
  * Determine whether a child should be selected by default.
  * Returns true if the child is important for backup.
  */
-export function shouldDefaultSelect(agentName: string, childName: string): boolean {
+export function shouldDefaultSelect(
+  agentName: string,
+  childName: string
+): boolean {
   // Always skip items matching universal skip patterns
   if (SKIP_PATTERNS.some((pattern) => pattern.test(childName))) {
     return false;
@@ -131,9 +135,7 @@ function getParentState(
   const paths = getSelectablePaths(tree);
   if (paths.length === 0) return false;
 
-  const selectedCount = paths.filter(
-    (p) => selection[p] || added[p]
-  ).length;
+  const selectedCount = paths.filter((p) => selection[p] || added[p]).length;
 
   if (selectedCount === 0) return false;
   if (selectedCount === paths.length) return true;
@@ -269,11 +271,12 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
       setErrors({});
     } catch (err) {
       console.error("Scan failed:", err);
+      toast.error(t("error.scanFailed"));
       setTrees([]);
     } finally {
       setScanState("done");
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     handleScan();
@@ -399,9 +402,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
           <Check className="h-3 w-3 shrink-0 text-green-600 dark:text-green-400" />
         )}
         {error && (
-          <span className="truncate text-[11px] text-destructive">
-            {error}
-          </span>
+          <span className="truncate text-[11px] text-destructive">{error}</span>
         )}
       </label>
     );
@@ -444,9 +445,7 @@ export function WizardPage({ onBack, onDone }: WizardPageProps) {
               <p className="truncate text-[11px] text-muted-foreground">
                 {tree.path}
               </p>
-              {error && (
-                <p className="text-[11px] text-destructive">{error}</p>
-              )}
+              {error && <p className="text-[11px] text-destructive">{error}</p>}
             </div>
           </label>
           {/* Siblings for file agents — shown as peers */}

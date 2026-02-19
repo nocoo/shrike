@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { listen, TauriEvent } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
+import { toast } from "sonner";
 import { addEntry, listEntries, removeEntry } from "@/lib/commands";
 import { useLocale, formatDialogTitle } from "@/lib/i18n";
 import type { BackupEntry } from "@/lib/types";
@@ -16,15 +17,15 @@ export function useFileList() {
   const [entries, setEntries] = useState<BackupEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
-  const { locale } = useLocale();
+  const { t, locale } = useLocale();
 
   // Load entries on mount
   useEffect(() => {
     listEntries()
       .then(setEntries)
-      .catch(console.error)
+      .catch(() => toast.error(t("error.loadFailed")))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   // Listen for Tauri drag-drop events
   useEffect(() => {
@@ -43,7 +44,8 @@ export function useFileList() {
             const entry = await addEntry(path);
             setEntries((prev) => [...prev, entry]);
           } catch (err) {
-            console.error(`Failed to add ${path}:`, err);
+            const msg = err instanceof Error ? err.message : String(err);
+            toast.error(`${t("error.addFailed")}: ${msg}`);
           }
         }
       }
@@ -54,28 +56,32 @@ export function useFileList() {
       unlistenLeave.then((fn) => fn());
       unlistenDrop.then((fn) => fn());
     };
-  }, []);
+  }, [t]);
 
   // Open native file picker to add files or folders
-  const addViaDialog = useCallback(async (directory: boolean) => {
-    const selected = await open({
-      multiple: true,
-      directory,
-      title: formatDialogTitle(directory, locale),
-    });
+  const addViaDialog = useCallback(
+    async (directory: boolean) => {
+      const selected = await open({
+        multiple: true,
+        directory,
+        title: formatDialogTitle(directory, locale),
+      });
 
-    if (!selected) return;
+      if (!selected) return;
 
-    const paths = Array.isArray(selected) ? selected : [selected];
-    for (const path of paths) {
-      try {
-        const entry = await addEntry(path);
-        setEntries((prev) => [...prev, entry]);
-      } catch (err) {
-        console.error(`Failed to add ${path}:`, err);
+      const paths = Array.isArray(selected) ? selected : [selected];
+      for (const path of paths) {
+        try {
+          const entry = await addEntry(path);
+          setEntries((prev) => [...prev, entry]);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          toast.error(`${t("error.addFailed")}: ${msg}`);
+        }
       }
-    }
-  }, [locale]);
+    },
+    [locale, t]
+  );
 
   const remove = useCallback(async (id: string) => {
     await removeEntry(id);

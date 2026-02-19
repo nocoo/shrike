@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, Copy, Check } from "lucide-react";
 import { useTheme } from "next-themes";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,8 +30,10 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
   const { setTheme } = useTheme();
 
   useEffect(() => {
-    getSettings().then(setSettings).catch(console.error);
-  }, []);
+    getSettings()
+      .then(setSettings)
+      .catch(() => toast.error(t("error.loadFailed")));
+  }, [t]);
 
   // Sync loaded settings to theme/locale providers
   useEffect(() => {
@@ -48,6 +51,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
       onBack();
     } catch (err) {
       console.error("Failed to save settings:", err);
+      toast.error(t("error.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -67,6 +71,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
       setSettings((s) => (s ? { ...s, autostart: enabled } : s));
     } catch (err) {
       console.error("Failed to set autostart:", err);
+      toast.error(t("error.settingFailed"));
     }
   };
 
@@ -76,6 +81,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
       setSettings((s) => (s ? { ...s, show_tray_icon: visible } : s));
     } catch (err) {
       console.error("Failed to set tray visibility:", err);
+      toast.error(t("error.settingFailed"));
     }
   };
 
@@ -85,6 +91,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
       setSettings((s) => (s ? { ...s, show_dock_icon: visible } : s));
     } catch (err) {
       console.error("Failed to set dock visibility:", err);
+      toast.error(t("error.settingFailed"));
     }
   };
 
@@ -96,6 +103,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
       await updateSettings(updated);
     } catch (err) {
       console.error("Failed to save theme:", err);
+      toast.error(t("error.settingFailed"));
     }
   };
 
@@ -107,11 +115,15 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
       await updateSettings(updated);
     } catch (err) {
       console.error("Failed to save language:", err);
+      toast.error(t("error.settingFailed"));
     }
   };
 
   return (
-    <div className="flex h-screen flex-col pt-[74px]" onContextMenu={(e) => e.preventDefault()}>
+    <div
+      className="flex h-screen flex-col pt-[74px]"
+      onContextMenu={(e) => e.preventDefault()}
+    >
       {/* Settings header with back button */}
       <header
         data-tauri-drag-region
@@ -204,7 +216,11 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                       className="flex-1 text-xs"
                       onClick={() => handleThemeChange(value)}
                     >
-                      {t(`settings.theme${value.charAt(0).toUpperCase()}${value.slice(1)}` as Parameters<typeof t>[0])}
+                      {t(
+                        `settings.theme${value.charAt(0).toUpperCase()}${value.slice(1)}` as Parameters<
+                          typeof t
+                        >[0]
+                      )}
                     </Button>
                   ))}
                 </div>
@@ -213,14 +229,19 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
               <div className="space-y-1.5">
                 <Label>{t("settings.language")}</Label>
                 <div className="flex gap-1">
-                  {([
-                    { value: "auto" as const, label: t("settings.languageAuto") },
+                  {[
+                    {
+                      value: "auto" as const,
+                      label: t("settings.languageAuto"),
+                    },
                     { value: "zh" as const, label: "中文" },
                     { value: "en" as const, label: "English" },
-                  ]).map(({ value, label }) => (
+                  ].map(({ value, label }) => (
                     <Button
                       key={value}
-                      variant={settings.language === value ? "default" : "outline"}
+                      variant={
+                        settings.language === value ? "default" : "outline"
+                      }
                       size="sm"
                       className="flex-1 text-xs"
                       onClick={() => handleLanguageChange(value)}
@@ -253,7 +274,9 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="backup-dir">{t("settings.backupDirName")}</Label>
+                <Label htmlFor="backup-dir">
+                  {t("settings.backupDirName")}
+                </Label>
                 <Input
                   id="backup-dir"
                   value={settings.backup_dir_name}
@@ -267,7 +290,9 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="machine-name">{t("settings.machineName")}</Label>
+                <Label htmlFor="machine-name">
+                  {t("settings.machineName")}
+                </Label>
                 <Input
                   id="machine-name"
                   value={settings.machine_name}
