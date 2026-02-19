@@ -5,7 +5,7 @@
 - **Package manager**: `bun` (not npm/pnpm)
 - **Dev command**: `bun run tauri dev`
 - **Rust edition**: 2024 (resolver = "3")
-- **Port**: Webhook on 127.0.0.1:7022
+- **Port**: Webhook on 127.0.0.1 — release default **7022**, dev default **7023** (via `debug_assertions`)
 - **Google Drive path**: Auto-detected from `~/Library/CloudStorage/GoogleDrive-*/`
 
 ## Version Management
@@ -52,10 +52,10 @@ bun run lint          # eslint + clippy
 
 ### Test distribution
 
-- Rust UT: 116 (types 12, error 4, commands 5, sync/filelist 13, sync/validation 23, sync/executor 16, sync/mod 6, webhook 4, sync status 5, gdrive detect 8, scan configs 7, scan tree 8, path sanitization 5)
+- Rust UT: 117 (types 13, error 4, commands 5, sync/filelist 13, sync/validation 23, sync/executor 16, sync/mod 6, webhook 4, sync status 5, gdrive detect 8, scan configs 7, scan tree 8, path sanitization 5)
 - Rust E2E: 26 (sync_e2e 7, webhook_e2e 19)
 - TS: 147 (utils 4, types 4, components 139)
-- **Total: 289**
+- **Total: 290**
 
 ### Coverage target
 

@@ -6,6 +6,22 @@ use std::path::{Component, Path, PathBuf};
 
 use crate::error::ShrikeError;
 
+/// Default webhook port for release builds.
+pub const DEFAULT_WEBHOOK_PORT: u16 = 7022;
+
+/// Default webhook port for dev builds (avoids conflict with release).
+pub const DEV_WEBHOOK_PORT: u16 = 7023;
+
+/// Returns the default webhook port based on build profile.
+/// Dev builds use 7023, release builds use 7022.
+pub fn default_webhook_port() -> u16 {
+    if cfg!(debug_assertions) {
+        DEV_WEBHOOK_PORT
+    } else {
+        DEFAULT_WEBHOOK_PORT
+    }
+}
+
 /// The type of a backup entry (file or directory).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -135,7 +151,7 @@ impl Default for AppSettings {
             gdrive_path,
             backup_dir_name: String::from("ShrikeBackup"),
             machine_name: default_machine_name(),
-            webhook_port: 7022,
+            webhook_port: default_webhook_port(),
             webhook_token: Uuid::new_v4().to_string(),
             show_tray_icon: true,
             show_dock_icon: true,
@@ -466,13 +482,23 @@ mod tests {
         // gdrive_path is auto-detected; may be empty if Google Drive not installed
         assert_eq!(settings.backup_dir_name, "ShrikeBackup");
         assert!(!settings.machine_name.is_empty()); // auto-detected hostname
-        assert_eq!(settings.webhook_port, 7022);
+        assert_eq!(settings.webhook_port, 7023); // dev default (debug_assertions)
         assert!(!settings.webhook_token.is_empty());
         assert!(settings.show_tray_icon);
         assert!(settings.show_dock_icon);
         assert!(!settings.autostart);
         assert_eq!(settings.theme, "auto");
         assert_eq!(settings.language, "auto");
+    }
+
+    #[test]
+    fn default_webhook_port_returns_dev_port_in_test() {
+        // Tests run with debug_assertions, so default port should be DEV_WEBHOOK_PORT
+        assert_eq!(default_webhook_port(), DEV_WEBHOOK_PORT);
+        assert_eq!(default_webhook_port(), 7023);
+        // Constants are correct
+        assert_eq!(DEFAULT_WEBHOOK_PORT, 7022);
+        assert_eq!(DEV_WEBHOOK_PORT, 7023);
     }
 
     #[test]
@@ -589,7 +615,7 @@ mod tests {
     fn store_data_default_empty() {
         let store = StoreData::default();
         assert!(store.items.is_empty());
-        assert_eq!(store.settings.webhook_port, 7022);
+        assert_eq!(store.settings.webhook_port, 7023); // dev default (debug_assertions)
     }
 
     // --- detect_gdrive_path ---
