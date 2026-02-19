@@ -5,9 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.3] - 2026-02-20
+
+### Fixed
+
+- Concurrent sync prevention via AtomicBool lock — UI and webhook can no longer trigger parallel rsync runs
+- Path traversal attack blocked — `destination_path()` rejects `..`, `/`, `.` and empty strings in `backup_dir_name` and `machine_name`
+- Empty Google Drive path guard — sync refuses to run when gdrive_path is not configured
+- Webhook `/status` now reports actual sync state (Idle/Running) instead of hardcoded Idle
+- Frontend errors surfaced as toast notifications instead of silent `console.error`
+
+### Added
+
+- `DataStore` trait abstraction for webhook handlers, enabling real HTTP integration tests without Tauri runtime
+- 19 webhook integration tests covering auth, status, sync trigger, error cases, 405/404 responses
+- Toast notification system wired into app via sonner `<Toaster />`
+- 5 error translation keys in both en and zh
+
+### Testing
+
+- 289 automated tests (116 Rust UT + 26 Rust E2E + 147 TypeScript)
+- E2E tests run with `--test-threads=1` to respect sync concurrency lock
+
 ## [0.1.2] - 2026-02-18
 
 ### Added
+
 - Dark theme support with system preference auto-detection (auto/light/dark)
 - i18n support with Chinese and English UI (auto/zh/en)
 - Appearance section in Settings with theme and language selectors
@@ -15,16 +38,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - next-themes integration for theme switching with class-based dark mode
 
 ### Changed
+
 - All hardcoded UI strings replaced with i18n translation keys
 - About page version now reads dynamically from Tauri API
 
 ### Testing
+
 - 268 automated tests (109 Rust UT + 12 Rust E2E + 147 TypeScript)
 - renderWithLocale test helper for i18n-aware component testing
 
 ## [0.1.1] - 2026-02-18
 
 ### Added
+
 - Dropdown menu on + button for separate "Add Files" / "Add Folders" selection
 - Standalone About page with logo, version, and GitHub link
 - Sync log as dedicated page with formatted summary
@@ -34,6 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Per-device backup subfolder via machine name setting
 
 ### Fixed
+
 - Sync no longer blocks the UI (trigger_sync made async with spawn_blocking)
 - rsync directory recursion restored with explicit `-r` flag when using `--files-from`
 - File list refreshes when navigating back from wizard
@@ -43,12 +70,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Shell permission added for opening external links
 
 ### Testing
+
 - 264 automated tests (109 Rust UT + 12 Rust E2E + 143 TypeScript)
 - Added `@testing-library/user-event` for Radix portal testing
 
 ## [0.1.0] - 2026-02-18
 
 ### Added
+
 - Tauri v2 + Next.js 16 (SSG) desktop application
 - shadcn/ui component library with custom #86502c theme
 - Drag-and-drop file/folder addition with full-window overlay
@@ -71,6 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Application icons generated from logo.png
 
 ### Testing
+
 - 186 automated tests (101 Rust UT + 12 Rust E2E + 73 TypeScript)
 - Three-layer verification: UT + Lint (pre-commit) + E2E (pre-push)
 - Core sync logic coverage: 95%+

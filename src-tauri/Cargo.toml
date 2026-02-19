@@ -1,6 +1,6 @@
 [package]
 name = "shrike"
-version = "0.1.2"
+version = "0.1.3"
 description = "Selective file backup to Google Drive"
 authors = ["nocoo"]
 edition = "2024"
