@@ -325,7 +325,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                     onChange={(e) =>
                       setSettings({
                         ...settings,
-                        webhook_port: parseInt(e.target.value, 10) || 7022,
+                        webhook_port: parseInt(e.target.value, 10) || 7015,
                       })
                     }
                   />

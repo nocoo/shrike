@@ -34,7 +34,7 @@ const defaultSettings = {
   gdrive_path: "/Users/test/Library/CloudStorage/GoogleDrive-user@example.com/My Drive",
   backup_dir_name: "ShrikeBackup",
   machine_name: "TestMac",
-  webhook_port: 7022,
+  webhook_port: 7015,
   webhook_token: "test-token",
   show_tray_icon: true,
   show_dock_icon: true,

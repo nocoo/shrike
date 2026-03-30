@@ -7,13 +7,13 @@ use std::path::{Component, Path, PathBuf};
 use crate::error::ShrikeError;
 
 /// Default webhook port for release builds.
-pub const DEFAULT_WEBHOOK_PORT: u16 = 7022;
+pub const DEFAULT_WEBHOOK_PORT: u16 = 7015;
 
 /// Default webhook port for dev builds (avoids conflict with release).
 pub const DEV_WEBHOOK_PORT: u16 = 7023;
 
 /// Returns the default webhook port based on build profile.
-/// Dev builds use 7023, release builds use 7022.
+/// Dev builds use 7023, release builds use 7015.
 pub fn default_webhook_port() -> u16 {
     if cfg!(debug_assertions) {
         DEV_WEBHOOK_PORT
@@ -497,7 +497,7 @@ mod tests {
         assert_eq!(default_webhook_port(), DEV_WEBHOOK_PORT);
         assert_eq!(default_webhook_port(), 7023);
         // Constants are correct
-        assert_eq!(DEFAULT_WEBHOOK_PORT, 7022);
+        assert_eq!(DEFAULT_WEBHOOK_PORT, 7015);
         assert_eq!(DEV_WEBHOOK_PORT, 7023);
     }
 
@@ -527,7 +527,7 @@ mod tests {
             gdrive_path: String::new(),
             backup_dir_name: "Backup".into(),
             machine_name: "TestMac".into(),
-            webhook_port: 7022,
+            webhook_port: 7015,
             webhook_token: "token".into(),
             show_tray_icon: true,
             show_dock_icon: true,
@@ -545,7 +545,7 @@ mod tests {
             gdrive_path: "/mnt/gdrive".into(),
             backup_dir_name: "../etc".into(),
             machine_name: "TestMac".into(),
-            webhook_port: 7022,
+            webhook_port: 7015,
             webhook_token: "token".into(),
             show_tray_icon: true,
             show_dock_icon: true,
@@ -563,7 +563,7 @@ mod tests {
             gdrive_path: "/mnt/gdrive".into(),
             backup_dir_name: "Backup".into(),
             machine_name: "../../root".into(),
-            webhook_port: 7022,
+            webhook_port: 7015,
             webhook_token: "token".into(),
             show_tray_icon: true,
             show_dock_icon: true,
@@ -581,7 +581,7 @@ mod tests {
             gdrive_path: "/mnt/gdrive".into(),
             backup_dir_name: "back/up".into(),
             machine_name: "TestMac".into(),
-            webhook_port: 7022,
+            webhook_port: 7015,
             webhook_token: "token".into(),
             show_tray_icon: true,
             show_dock_icon: true,
@@ -599,7 +599,7 @@ mod tests {
             gdrive_path: "/mnt/gdrive".into(),
             backup_dir_name: "Backup".into(),
             machine_name: "..".into(),
-            webhook_port: 7022,
+            webhook_port: 7015,
             webhook_token: "token".into(),
             show_tray_icon: true,
             show_dock_icon: true,
@@ -759,7 +759,7 @@ mod tests {
         let json = r#"{
             "gdrive_path": "/some/path",
             "backup_dir_name": "Backup",
-            "webhook_port": 7022,
+            "webhook_port": 7015,
             "webhook_token": "abc"
         }"#;
         let settings: AppSettings = serde_json::from_str(json).unwrap();

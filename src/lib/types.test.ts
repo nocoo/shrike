@@ -20,7 +20,7 @@ describe("types", () => {
       gdrive_path: "/mnt/gdrive",
       backup_dir_name: "ShrikeBackup",
       machine_name: "TestMac",
-      webhook_port: 7022,
+      webhook_port: 7015,
       webhook_token: "test-token",
       show_tray_icon: true,
       show_dock_icon: true,
@@ -28,7 +28,7 @@ describe("types", () => {
       theme: "auto",
       language: "auto",
     };
-    expect(settings.webhook_port).toBe(7022);
+    expect(settings.webhook_port).toBe(7015);
     expect(settings.backup_dir_name).toBe("ShrikeBackup");
     expect(settings.machine_name).toBe("TestMac");
     expect(settings.show_tray_icon).toBe(true);

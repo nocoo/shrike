@@ -5,7 +5,7 @@
 - **Package manager**: `bun` (not npm/pnpm)
 - **Dev command**: `bun run tauri dev`
 - **Rust edition**: 2024 (resolver = "3")
-- **Port**: Webhook on 127.0.0.1 — release default **7022**, dev default **7023** (via `debug_assertions`)
+- **Port**: Webhook on 127.0.0.1 — release default **7015**, dev default **7023** (via `debug_assertions`)
 - **Google Drive path**: Auto-detected from `~/Library/CloudStorage/GoogleDrive-*/`
 
 ## Version Management
