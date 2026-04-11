@@ -27,6 +27,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
+          targets: x86_64-unknown-linux-gnu
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -38,7 +39,9 @@ jobs:
         run: bun run build
 
       - name: Lint (ESLint + Cargo Clippy)
-        run: bun run lint
+        run: |
+          bun run lint:ts
+          cargo clippy --manifest-path src-tauri/Cargo.toml --target x86_64-unknown-linux-gnu -- -D warnings
 
       - name: Test (TypeScript)
         run: bun run test
