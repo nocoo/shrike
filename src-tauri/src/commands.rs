@@ -2,7 +2,9 @@ use std::fs;
 use std::path::Path;
 
 use serde_json::json;
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
+#[cfg(target_os = "macos")]
+use tauri::Manager;
 use tauri_plugin_store::StoreExt;
 use uuid::Uuid;
 

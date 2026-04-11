@@ -12,6 +12,7 @@ use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_store::StoreExt;
 
 const TRAY_ICON_BYTES: &[u8] = include_bytes!("../icons/tray-icon.png");
+#[cfg(target_os = "macos")]
 const APP_ICON_BYTES: &[u8] = include_bytes!("../icons/icon.png");
 
 /// Re-apply the app icon to the macOS dock.
