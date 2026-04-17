@@ -1,0 +1,141 @@
+# OSV Scanner config
+
+[[IgnoredVulns]]
+id = "GHSA-23c5-xmqv-rm74"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-25h7-pfq9-p65f"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-26pp-8wgv-hjvm"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-27v5-c462-wpq7"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-2mjp-6q6p-2qxm"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-3v7f-55p6-f55p"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-458j-xx4x-4375"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-46wh-pxpv-q5gq"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-4992-7rv2-5pvq"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-4w7w-66w2-5vf9"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-5pq2-9x2x-5p6w"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-7r86-cg39-jmmj"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-92pp-h63x-v22m"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-c2c7-rcm5-vvqj"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-cq8v-f236-94qc"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-f269-vfmq-vjvj"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-f886-m6hf-6m8v"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-gq3j-xvxp-8hrf"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-j3q9-mxjg-w52f"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-mw96-cpmx-2vgc"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-p6xx-57qc-3wxr"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-p9ff-h696-f583"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-phc3-fgpg-7m6h"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-q5qw-h33p-qvwr"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-r5rp-j6wh-rvv4"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-rf6f-7fwh-wjgh"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-v2wj-q39q-566r"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-v8w9-8mx6-g223"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-v9p9-hfj2-hcw8"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-vrm6-8vpv-qv8q"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-wc8c-qw6v-h7f6"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-wmmm-f939-6g9c"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-wrw7-89jp-8q8g"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-xf4j-xp2r-rqqx"
+reason = "transitive dep — fix version not resolvable"
+
+[[IgnoredVulns]]
+id = "GHSA-xpcf-pg52-r92g"
+reason = "transitive dep — fix version not resolvable"
