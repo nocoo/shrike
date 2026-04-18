@@ -45,3 +45,6 @@ jobs:
 
       - name: Test (Rust)
         run: bun run test:rs
+
+      - name: Test (Rust E2E - L2)
+        run: bun run test:e2e:rs
