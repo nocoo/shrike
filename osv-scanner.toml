@@ -1,0 +1,78 @@
+# OSV Scanner configuration — shrike
+
+[[IgnoredVulns]]
+id = "GHSA-wrw7-89jp-8q8g"
+reason = "Rust transitive dep, no direct upgrade path available"
+
+[[IgnoredVulns]]
+id = "GHSA-cq8v-f236-94qc"
+reason = "Rust transitive dep, no direct upgrade path available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0413"
+reason = "atk: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0416"
+reason = "atk-sys: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2025-0057"
+reason = "fxhash: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0412"
+reason = "gdk: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0418"
+reason = "gdk-sys: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0411"
+reason = "gdkwayland-sys: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0417"
+reason = "gdkx11: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0414"
+reason = "gdkx11-sys: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0415"
+reason = "gtk: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0420"
+reason = "gtk-sys: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0419"
+reason = "gtk3-macros: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0370"
+reason = "proc-macro-error: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2025-0081"
+reason = "unic-char-property: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2025-0075"
+reason = "unic-char-range: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2025-0080"
+reason = "unic-common: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2025-0100"
+reason = "unic-ucd-ident: unmaintained, no fix available"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2025-0098"
+reason = "unic-ucd-version: unmaintained, no fix available"
+
