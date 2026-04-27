@@ -29,3 +29,6 @@ coverage/
 # Temp files
 *.tmp
 *.swp
+
+# Build artifacts
+tsconfig.tsbuildinfo
