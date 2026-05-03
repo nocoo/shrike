@@ -13,6 +13,14 @@ vi.mock("next-themes", () => ({
   }),
 }));
 
+// Mock sonner toast so tests can assert on calls
+vi.mock("sonner", () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+  },
+}));
+
 // Mock Tauri commands
 const mockGetSettings = vi.fn();
 const mockUpdateSettings = vi.fn();
@@ -259,6 +267,208 @@ describe("SettingsPage", () => {
       expect(mockUpdateSettings).toHaveBeenCalledWith(
         expect.objectContaining({ language: "zh" })
       );
+    });
+  });
+
+  it("shows toast when initial getSettings fails", async () => {
+    const { toast } = await import("sonner");
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockGetSettings.mockRejectedValueOnce(new Error("nope"));
+    renderWithLocale(<SettingsPage onBack={() => {}} />);
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Failed to load data");
+    });
+    errSpy.mockRestore();
+  });
+
+  it("logs and toasts when handleSave fails", async () => {
+    const { toast } = await import("sonner");
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockUpdateSettings.mockRejectedValueOnce(new Error("save fail"));
+    const onBack = vi.fn();
+    renderWithLocale(<SettingsPage onBack={onBack} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Save Settings")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("Save Settings"));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Failed to save settings");
+    });
+    expect(onBack).not.toHaveBeenCalled();
+    expect(errSpy).toHaveBeenCalled();
+    errSpy.mockRestore();
+  });
+
+  it("logs and toasts when setAutostart rejects", async () => {
+    const { toast } = await import("sonner");
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockSetAutostart.mockRejectedValueOnce(new Error("boom"));
+    renderWithLocale(<SettingsPage onBack={() => {}} />);
+    await waitFor(() => {
+      expect(screen.getByText("Launch at Login")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getAllByRole("switch")[0]);
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Failed to update setting");
+    });
+    errSpy.mockRestore();
+  });
+
+  it("logs and toasts when setTrayVisible rejects", async () => {
+    const { toast } = await import("sonner");
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockSetTrayVisible.mockRejectedValueOnce(new Error("boom"));
+    renderWithLocale(<SettingsPage onBack={() => {}} />);
+    await waitFor(() => {
+      expect(screen.getByText("Show in Menu Bar")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getAllByRole("switch")[1]);
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Failed to update setting");
+    });
+    errSpy.mockRestore();
+  });
+
+  it("logs and toasts when setDockVisible rejects", async () => {
+    const { toast } = await import("sonner");
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockSetDockVisible.mockRejectedValueOnce(new Error("boom"));
+    renderWithLocale(<SettingsPage onBack={() => {}} />);
+    await waitFor(() => {
+      expect(screen.getByText("Show in Dock")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getAllByRole("switch")[2]);
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Failed to update setting");
+    });
+    errSpy.mockRestore();
+  });
+
+  it("logs and toasts when handleThemeChange rejects", async () => {
+    const { toast } = await import("sonner");
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockUpdateSettings.mockRejectedValueOnce(new Error("boom"));
+    renderWithLocale(<SettingsPage onBack={() => {}} />);
+    await waitFor(() => {
+      expect(screen.getByText("Dark")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText("Dark"));
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Failed to update setting");
+    });
+    errSpy.mockRestore();
+  });
+
+  it("logs and toasts when handleLanguageChange rejects", async () => {
+    const { toast } = await import("sonner");
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockUpdateSettings.mockRejectedValueOnce(new Error("boom"));
+    renderWithLocale(<SettingsPage onBack={() => {}} />);
+    await waitFor(() => {
+      expect(screen.getByText("中文")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText("中文"));
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Failed to update setting");
+    });
+    errSpy.mockRestore();
+  });
+
+  it("updates gdrive path input", async () => {
+    renderWithLocale(<SettingsPage onBack={() => {}} />);
+    const input = (await screen.findByLabelText("Google Drive Path")) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "/new/path" } });
+    expect(input.value).toBe("/new/path");
+  });
+
+  it("updates backup directory name input", async () => {
+    renderWithLocale(<SettingsPage onBack={() => {}} />);
+    const input = (await screen.findByLabelText("Backup Directory Name")) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "MyBackup" } });
+    expect(input.value).toBe("MyBackup");
+  });
+
+  it("updates machine name input", async () => {
+    renderWithLocale(<SettingsPage onBack={() => {}} />);
+    const input = (await screen.findByLabelText("Machine Name")) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "Workstation" } });
+    expect(input.value).toBe("Workstation");
+  });
+
+  it("updates webhook port input as a number", async () => {
+    renderWithLocale(<SettingsPage onBack={() => {}} />);
+    const input = (await screen.findByLabelText("Port")) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "8080" } });
+    expect(input.value).toBe("8080");
+  });
+
+  it("falls back to default port when webhook port input is invalid", async () => {
+    renderWithLocale(<SettingsPage onBack={() => {}} />);
+    const input = (await screen.findByLabelText("Port")) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "abc" } });
+    // parseInt returns NaN → fallback to 7015
+    expect(input.value).toBe("7015");
+  });
+
+  it("copies the webhook curl command and toggles to Copied state", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+
+    renderWithLocale(<SettingsPage onBack={() => {}} />);
+    const button = await screen.findByText("Copy curl");
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith(
+        expect.stringContaining("Authorization: Bearer test-token")
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Copied!")).toBeInTheDocument();
+    });
+
+    // Wait past the 2s timeout — label flips back to "Copy curl"
+    await waitFor(
+      () => {
+        expect(screen.getByText("Copy curl")).toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
+  });
+
+  it("maps non-auto themes directly to next-themes setTheme", async () => {
+    mockGetSettings.mockResolvedValueOnce({ ...defaultSettings, theme: "dark" });
+    renderWithLocale(<SettingsPage onBack={() => {}} />);
+    await waitFor(() => {
+      expect(mockSetTheme).toHaveBeenCalledWith("dark");
+    });
+  });
+
+  it("maps auto theme to next-themes 'system'", async () => {
+    mockGetSettings.mockResolvedValueOnce({ ...defaultSettings, theme: "auto" });
+    renderWithLocale(<SettingsPage onBack={() => {}} />);
+    await waitFor(() => {
+      expect(mockSetTheme).toHaveBeenCalledWith("system");
+    });
+  });
+
+  it("does not crash when handleSave is called before settings load", async () => {
+    // Hold getSettings unresolved so settings stays null
+    let resolve: (v: typeof defaultSettings) => void = () => {};
+    mockGetSettings.mockImplementationOnce(
+      () => new Promise<typeof defaultSettings>((r) => (resolve = r))
+    );
+    renderWithLocale(<SettingsPage onBack={() => {}} />);
+    // Save button is gated by settings, so it should not be present
+    expect(screen.queryByText("Save Settings")).not.toBeInTheDocument();
+    // Resolve to clean up
+    resolve(defaultSettings);
+    await waitFor(() => {
+      expect(screen.getByText("Save Settings")).toBeInTheDocument();
     });
   });
 });

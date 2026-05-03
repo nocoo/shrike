@@ -68,7 +68,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
   const handleAutostart = async (enabled: boolean) => {
     try {
       await setAutostart(enabled);
-      setSettings((s) => (s ? { ...s, autostart: enabled } : s));
+      setSettings((s) => ({ ...s!, autostart: enabled }));
     } catch (err) {
       console.error("Failed to set autostart:", err);
       toast.error(t("error.settingFailed"));
@@ -78,7 +78,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
   const handleTrayVisible = async (visible: boolean) => {
     try {
       await setTrayVisible(visible);
-      setSettings((s) => (s ? { ...s, show_tray_icon: visible } : s));
+      setSettings((s) => ({ ...s!, show_tray_icon: visible }));
     } catch (err) {
       console.error("Failed to set tray visibility:", err);
       toast.error(t("error.settingFailed"));
@@ -88,7 +88,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
   const handleDockVisible = async (visible: boolean) => {
     try {
       await setDockVisible(visible);
-      setSettings((s) => (s ? { ...s, show_dock_icon: visible } : s));
+      setSettings((s) => ({ ...s!, show_dock_icon: visible }));
     } catch (err) {
       console.error("Failed to set dock visibility:", err);
       toast.error(t("error.settingFailed"));
