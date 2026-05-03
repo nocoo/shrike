@@ -167,6 +167,38 @@ describe("groupEntries", () => {
     expect(groups[0].key).toBe("/Users/nocoo/.aider.conf.yml");
     expect(groups[0].entries).toHaveLength(1);
   });
+
+  it("falls back to the original path when split returns empty", () => {
+    // Path ending in "/" causes parts.pop() to return "", triggering the || path fallback
+    expect(formatPath("/Users/nocoo/dir/")).toEqual({
+      dir: "/Users/nocoo/dir",
+      name: "/Users/nocoo/dir/",
+    });
+  });
+
+  it("groups entries when none have a home prefix", () => {
+    // Forces the homePrefix-detection loop to finish without finding a prefix (L52 false branch)
+    const entries = [
+      makeEntry("1", "/etc/foo", "file"),
+      makeEntry("2", "/var/log/bar", "directory"),
+    ];
+    const groups = groupEntries(entries);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].key).toBe("/");
+    // Sorting puts directories before files
+    expect(groups[0].entries[0].item_type).toBe("directory");
+    expect(groups[0].entries[1].item_type).toBe("file");
+  });
+
+  it("places / group last regardless of input order", () => {
+    // Cover the b === '/' early-return branch in the sortedKeys comparator
+    const entries = [
+      makeEntry("1", "/etc/foo", "file"),
+      makeEntry("2", "/Users/nocoo/zzz/bar", "file"),
+    ];
+    const groups = groupEntries(entries);
+    expect(groups[groups.length - 1].key).toBe("/");
+  });
 });
 
 // --- Component tests ---
