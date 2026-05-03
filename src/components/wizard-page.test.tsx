@@ -589,6 +589,86 @@ describe("WizardPage", () => {
       ).toBeInTheDocument();
     });
   });
+
+  it("toggles a file-type agent's checkbox on/off", async () => {
+    renderWithLocale(<WizardPage {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Aider")).toBeInTheDocument();
+    });
+
+    const aiderRow = screen.getByText("Aider").closest("label")!;
+    const checkbox = aiderRow.querySelector(
+      "input[type='checkbox']"
+    ) as HTMLInputElement;
+    expect(checkbox).toBeChecked();
+
+    fireEvent.click(checkbox);
+    expect(checkbox).not.toBeChecked();
+
+    fireEvent.click(checkbox);
+    expect(checkbox).toBeChecked();
+  });
+
+  it("applies importance check to siblings of file-type agents", async () => {
+    // File-type agent with siblings exercises the L256 branch:
+    //   sel[sibling.path] = shouldDefaultSelect(tree.agent, sibling.name)
+    mockScanCodingConfigsTree.mockResolvedValueOnce([
+      {
+        agent: "Aider",
+        path: "/Users/test/.aider.conf.yml",
+        item_type: "file",
+        children: [],
+        siblings: [
+          {
+            name: ".aider.chat.history.md",
+            path: "/Users/test/.aider.chat.history.md",
+            item_type: "file",
+          },
+        ],
+      },
+    ]);
+    renderWithLocale(<WizardPage {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Aider")).toBeInTheDocument();
+    });
+
+    // Sibling should be visible alongside the file agent
+    await waitFor(() => {
+      expect(screen.getByText(".aider.chat.history.md")).toBeInTheDocument();
+    });
+  });
+
+  it("renders the error message returned by addEntry for a file agent", async () => {
+    mockAddEntry.mockRejectedValue(new Error("file agent failure"));
+    renderWithLocale(<WizardPage {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Aider")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText(/Add \d+ to Sync List/));
+
+    await waitFor(() => {
+      expect(screen.getAllByText("file agent failure").length).toBeGreaterThan(0);
+    });
+  });
+
+  it("stringifies non-Error rejections from addEntry", async () => {
+    mockAddEntry.mockRejectedValue("plain string failure");
+    renderWithLocale(<WizardPage {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Aider")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText(/Add \d+ to Sync List/));
+
+    await waitFor(() => {
+      expect(screen.getAllByText("plain string failure").length).toBeGreaterThan(0);
+    });
+  });
 });
 
 describe("shouldDefaultSelect", () => {
