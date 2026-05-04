@@ -1,4 +1,4 @@
-bun run test && bun run lint && bun run test:rs && bun run test:e2e:rs
+bun run test && bun run lint && bun run test:rs && cargo llvm-cov --fail-under-lines 80 --manifest-path src-tauri/Cargo.toml -- --test-threads=1 && bun run test:e2e:rs
 
 # G2b: dependency vulnerability scan
 osv-scanner scan --lockfile=Cargo.lock --config=osv-scanner.toml
