@@ -41,7 +41,7 @@ jobs:
         run: bun run lint
 
       - name: Test (TypeScript)
-        run: bun run test
+        run: bun run test:coverage
 
       - name: Test (Rust)
         run: bun run test:rs
