@@ -8,6 +8,7 @@
     "start": "next start",
     "tauri": "tauri",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "test:rs": "cargo test --manifest-path src-tauri/Cargo.toml --lib",
     "test:e2e:rs": "cargo test --manifest-path src-tauri/Cargo.toml --tests -- --test-threads=1",
