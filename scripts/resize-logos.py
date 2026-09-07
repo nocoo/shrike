@@ -16,7 +16,10 @@ def main():
     foreground = Image.open(ROOT / "logo.png").convert("RGBA")
     rounded = Image.open(ROOT / "assets/brand/icon-rounded.png").convert("RGBA")
     if "--android-source" in sys.argv:
-        for source, name in [(foreground, "android-foreground.png"), (Image.open(ROOT / "logo-menu.png").convert("RGBA"), "android-monochrome.png")]:
+        template = Image.open(ROOT / "logo-menu.png").convert("L")
+        monochrome = Image.new("RGBA", template.size)
+        monochrome.putalpha(template.point(lambda value: 255 if value < 128 else 0))
+        for source, name in [(foreground, "android-foreground.png"), (monochrome, "android-monochrome.png")]:
             inset = Image.new("RGBA", (2048, 2048))
             mark = source.copy()
             mark.thumbnail((1126, 1126), Image.Resampling.LANCZOS)

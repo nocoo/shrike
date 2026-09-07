@@ -3,10 +3,7 @@
   "finishing": "01",
   "method": "retained-original",
   "generationCalls": 0,
-  "nativeDimensions": [
-    2048,
-    2048
-  ],
+  "nativeDimensions": [2048, 2048],
   "original": {
     "path": "source/original.png",
     "sha256": "97692ebf5b7811eb48005f814a5688bc05d582533adab440636295370a60befa",
@@ -46,7 +43,7 @@
       "role": "Platform-only foreground inset; canonical transparent master is unchanged"
     },
     "assets/brand/android-monochrome.png": {
-      "sha256": "9f7dcbf452a7971f6af883ef4035524f27fe5bc3db60cf258046ed6ad43bc1a3",
+      "sha256": "2d76536373a1c9665cf36bfa053e5883cc00c3f56bb34bc995df57d4e34f44af",
       "width": 2048,
       "height": 2048,
       "role": "Platform-only foreground inset; canonical transparent master is unchanged"

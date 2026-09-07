@@ -28,3 +28,5 @@ The exact source, sampled palette, independent background layers, every export s
 - [Shared logo usage SOP](https://github.com/nocoo/hexly.ai/blob/main/docs/07-logo-usage-sop.md)
 
 Before/after deliberately shares the same original foreground. Verify small marks at their actual displayed sizes on both themes, decode every ICO resolution, and keep any platform-specific mask separate from the transparent source.
+
+Android's custom layers are inset before the Tauri generator reads them. Its monochrome layer extracts the dark silhouette from the archived `logo-menu.png` reference, whose light checkerboard is baked into the image; those light pixels are excluded from the platform alpha mask. The existing macOS tray PNG remains unchanged.
