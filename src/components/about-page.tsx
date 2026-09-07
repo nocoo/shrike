@@ -20,7 +20,10 @@ export function AboutPage({ onBack }: AboutPageProps) {
   }, []);
 
   return (
-    <div className="flex h-screen flex-col pt-[74px]" onContextMenu={(e) => e.preventDefault()}>
+    <div
+      className="flex h-screen flex-col pt-[74px]"
+      onContextMenu={(e) => e.preventDefault()}
+    >
       {/* About header with back button */}
       <header
         data-tauri-drag-region
@@ -45,16 +48,12 @@ export function AboutPage({ onBack }: AboutPageProps) {
 
       {/* About content — centered */}
       <div className="flex flex-1 flex-col items-center justify-center gap-4">
-        <Image
-          src="/logo-512.png"
-          alt="Shrike"
-          width={160}
-          height={160}
-          className="rounded-lg"
-        />
+        <Image src="/logo-512.png" alt="Shrike" width={160} height={160} />
         <div className="text-center">
           <p className="text-base font-semibold">Shrike</p>
-          <p className="text-sm text-muted-foreground">{version ? `v${version}` : ""}</p>
+          <p className="text-sm text-muted-foreground">
+            {version ? `v${version}` : ""}
+          </p>
         </div>
         <a
           href="https://github.com/nocoo/shrike"

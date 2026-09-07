@@ -1,0 +1,57 @@
+{
+  "study": "shrike/2026-09-07-01",
+  "finishing": "01",
+  "method": "retained-original",
+  "generationCalls": 0,
+  "nativeDimensions": [
+    2048,
+    2048
+  ],
+  "original": {
+    "path": "source/original.png",
+    "sha256": "97692ebf5b7811eb48005f814a5688bc05d582533adab440636295370a60befa",
+    "width": 2048,
+    "height": 2048,
+    "bytes": 3750012,
+    "repository": "https://github.com/nocoo/shrike",
+    "repositoryRevision": "9ca43106ca79f35f7b0ad77198b82150a2307b44",
+    "sourcePath": "logo.png",
+    "sourceUrl": "https://github.com/nocoo/shrike/blob/9ca43106ca79f35f7b0ad77198b82150a2307b44/logo.png"
+  },
+  "masters": {
+    "logo.png": {
+      "sha256": "97692ebf5b7811eb48005f814a5688bc05d582533adab440636295370a60befa",
+      "width": 2048,
+      "height": 2048
+    },
+    "assets/brand/icon.png": {
+      "sha256": "8d394f7cbade80f4f03e588773494e53719df1232cc94908cf0bad9296ab4c74",
+      "width": 2048,
+      "height": 2048
+    },
+    "assets/brand/icon-rounded.png": {
+      "sha256": "d8f915badd89c8c289f644493ecada3132eef2118cec900a6d4f4ee55fa93e34",
+      "width": 2048,
+      "height": 2048
+    },
+    "assets/brand/background.png": {
+      "sha256": "06ad2e05fbe5e17e91da6a1a601ed31971a6d94431b2c19a46a1eba14e6ea406",
+      "width": 2048,
+      "height": 2048
+    },
+    "assets/brand/android-foreground.png": {
+      "sha256": "8bff2147f47a2dd4b576063c55e458e85c52aed1ac170df2391f4a4284a1b9d2",
+      "width": 2048,
+      "height": 2048,
+      "role": "Platform-only foreground inset; canonical transparent master is unchanged"
+    },
+    "assets/brand/android-monochrome.png": {
+      "sha256": "9f7dcbf452a7971f6af883ef4035524f27fe5bc3db60cf258046ed6ad43bc1a3",
+      "width": 2048,
+      "height": 2048,
+      "role": "Platform-only foreground inset; canonical transparent master is unchanged"
+    }
+  },
+  "review": "https://hexly.ai/logos/shrike",
+  "archive": "https://github.com/nocoo/hexly.ai/tree/main/artwork/logo-family/shrike/2026-09-07-01"
+}
