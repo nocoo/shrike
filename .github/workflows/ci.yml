@@ -5,6 +5,7 @@ on:
     branches: [main]
   push:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -16,7 +17,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install system dependencies
         run: |
@@ -29,7 +30,9 @@ jobs:
           components: clippy
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: "1.4.2"
 
       - name: Install dependencies
         run: bun install --frozen-lockfile --ignore-scripts
@@ -48,3 +51,10 @@ jobs:
 
       - name: Test (Rust E2E - L2)
         run: bun run test:e2e:rs
+
+  security:
+    uses: nocoo/base-ci/.github/workflows/security.yml@ab52d72877d386c9a8fd224e9ac868e88be90539
+    with:
+      lockfiles: "bun.lock,Cargo.lock"
+      osv-config: "osv-scanner.toml"
+      gitleaks-config: ".gitleaks.toml"
