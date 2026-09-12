@@ -25,17 +25,16 @@ jobs:
           sudo apt-get install -y libglib2.0-dev libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87
         with:
+          toolchain: stable
           components: clippy
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+      - name: Setup JS and frozen dependencies
+        uses: nocoo/base-ci/.github/actions/setup-js@ad43150de3a2be2fa464b5cd2f921dc4fa9f8f0f
         with:
-          bun-version: "1.4.2"
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile --ignore-scripts
+          runtime-version: "1.4.2"
+          install-policy: "blocked"
 
       - name: Build
         run: bun run build
@@ -53,7 +52,7 @@ jobs:
         run: bun run test:e2e:rs
 
   security:
-    uses: nocoo/base-ci/.github/workflows/security.yml@ab52d72877d386c9a8fd224e9ac868e88be90539
+    uses: nocoo/base-ci/.github/workflows/security.yml@ad43150de3a2be2fa464b5cd2f921dc4fa9f8f0f
     with:
       lockfiles: "bun.lock,Cargo.lock"
       osv-config: "osv-scanner.toml"
