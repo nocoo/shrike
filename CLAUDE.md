@@ -1,136 +1,89 @@
-# Shrike - Project Context
+# Shrike
 
-## Quick Reference
+Selective file backup to Google Drive for Desktop using local rsync.
+Profile: native-hybrid.
+Direction: [architecture](docs/02-architecture.md). Frameworks must preserve this handbook.
 
-- **Package manager**: `bun` (not npm/pnpm)
-- **Dev command**: `bun run tauri dev`
-- **Rust edition**: 2024 (resolver = "3")
-- **Port**: Webhook on 127.0.0.1 — release default **7015**, dev default **7023** (via `debug_assertions`)
-- **Google Drive path**: Auto-detected from `~/Library/CloudStorage/GoogleDrive-*/`
+## Sources of Truth
 
-## Version Management
+This file is the quality contract; hooks, CI and config are enforcement. Close implementation gaps without lowering the contract. Historical test results are not evidence of a current passing run.
 
-### Current version: 0.1.2
+| Fact | Where |
+|---|---|
+| Human docs / sync rules | [README.md](README.md), [sync pipeline](docs/03-sync-pipeline.md) |
+| Detailed implementation | [native constraints](docs/06-native-implementation.md) |
+| Version | synchronize `package.json`, `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json` |
+| Enforcement | `.husky`, `vitest.config.ts`, Cargo, ESLint and CI |
+| Accidents | [Retrospective.md](Retrospective.md) |
+| Machine workflow | global `AGENTS.md` and Git rules |
 
-Version is tracked in three files (keep in sync):
+## Project Invariants
 
-- `package.json` → `"version": "0.1.2"`
-- `src-tauri/Cargo.toml` → `version = "0.1.2"`
-- `src-tauri/tauri.conf.json` → `"version": "0.1.2"`
+- Sync means local rsync completion, not completed cloud upload. Preserve source hierarchy; do not delete destination backups when removing an entry.
+- Validate paths and the chosen Google Drive account/destination before copying; files are not additionally encrypted.
+- Only loopback GET /status and POST /sync are exposed, both Bearer-authenticated; run one sync at a time.
+- Use `tauri::async_runtime::spawn` in setup and explicit rsync `-r` with `--files-from`; preserve filelist → validation → execution boundaries.
+- Keep i18n/theme/fixture updates coherent when settings fields change; preserve native drag regions and Dock visibility restoration.
+- Keep all three version files synchronized and read runtime UI version through Tauri; never hardcode release text.
 
-### Release process
+## Stack / Layout
 
-1. Update version in all three files
-2. Update `CHANGELOG.md`
-3. `git commit -m "chore: release v<version>"`
-4. `git tag -a v<version> -m "v<version>"`
-5. `git push origin main --tags`
-6. `gh release create v<version> --title "v<version>"`
+| Lane | Location / choice |
+|---|---|
+| Frontend | `src`, Next.js static export / React, Bun |
+| Native / webhook | `src-tauri`, Rust 2024 / resolver 3, Tauri v2, Axum |
+| Data / backup | Tauri Store `shrike_data.json`, system rsync, local Google Drive directory |
+| Test lanes | Vitest plus Rust unit and sync/webhook integration suites |
 
-### Commit convention
+## Commands
 
-Conventional Commits: `<type>: <description>`
-Types: feat, fix, docs, test, refactor, chore
-Rules: imperative mood, lowercase, max 50 chars, no period
-
-## Testing
-
-### Test commands
+Run at root with Bun, Node 24+, Rust 2024-capable tools and Xcode CLT. Rust integration tests need system rsync, but do not require Google Drive login. Pre-push additionally requires cargo-llvm-cov and OSV; pre-commit requires gitleaks.
 
 ```bash
-bun run test          # vitest (frontend, 147 tests)
-bun run test:rs       # cargo test --lib (rust UT, 116 tests)
-bun run test:e2e:rs   # cargo test --tests (rust E2E, 26 tests)
-bun run test:all      # all of the above
-bun run lint          # eslint + clippy
+bun install --frozen-lockfile
+bun run typecheck
+bun run lint
+bun run format:check
+bun run build
+bun run test:coverage
+bun run test:rs
+bun run test:e2e:rs
+bun run tauri dev
 ```
 
-### Git hooks (husky)
+## Verification
 
-- **pre-commit**: `bun run test && bun run test:rs && bun run lint`
-- **pre-push**: `bun run test && bun run lint && bun run test:rs && bun run test:e2e:rs`
+6DQ = L1/L2/L3 + G1/G2 + D1 (test isolation). Status: `enforced`, `planned`, `manual`, or `N/A`; partial enforcement below does not certify the full required bar.
+L1 requires statements, branches, functions and lines each ≥95%, with no skipped/focused tests; preserve any stricter package threshold. Native tools must identify unmeasured metrics as gaps.
+G1 requires check-only strict analysis/formatting with zero errors/warnings. G2 requires dependency and secret scans, with missing required scanners failing.
 
-### Test distribution
+| Dimension | Status | Required proof and current evidence/gap |
+|---|---|---|
+| L1 TypeScript | planned | Four 95% thresholds run in hook/CI, but `passWithNoTests` and UI/script exclusions leave coverage/completeness gaps. |
+| L1 Rust | planned | Hook runs llvm-cov with lines ≥80%; no all-four ≥95% gate. |
+| L2 sync / webhook | planned | Real rsync uses temp directories; Axum `oneshot` tests are in-memory router calls, not TCP HTTP. Add real-loopback coverage of both endpoint/method pairs. |
+| L3 native UI | manual | Check drag/drop, tray, Dock, themes and actual Google Drive upload separately on macOS. |
+| G1 TS / Rust | planned | Hook/CI run TS checks, zero-warning ESLint and clippy; Prettier check exists but is not part of those gates. |
+| G2 | enforced | CI scans both bun.lock and Cargo.lock plus secrets; local hooks split gitleaks and Cargo OSV. |
+| D1 | planned | Rust temp-directory/mock-store tests avoid daily backup data; explicit destructive-operation markers/guards across all lanes are not established. |
 
-- Rust UT: 117 (types 13, error 4, commands 5, sync/filelist 13, sync/validation 23, sync/executor 16, sync/mod 6, webhook 4, sync status 5, gdrive detect 8, scan configs 7, scan tree 8, path sanitization 5)
-- Rust E2E: 26 (sync_e2e 7, webhook_e2e 19)
-- TS: 147 (utils 4, types 4, components 139)
-- **Total: 290**
+Husky pre-commit runs types/lint/TS coverage/Rust units/secrets. Pre-push repeats checks, runs 80%-line Rust coverage and integration, then OSV. CI builds the web output and runs both language lanes. Hooks use the working tree.
 
-### Coverage target
+Target hooks: pre-commit checks G1 + L1 against the index snapshot (`git checkout-index`) in <30s; pre-push checks L2 and G2 in parallel against every stdin push ref/commit in <3min, plus build where applicable. L3 runs in CI or an explicit manual lane.
+Never bypass commit/push hooks, force-push, or use autofix in checks. Documentation changes do not authorize deploying or implementing new gates.
 
-- Core sync logic: 95%+
-- Overall: 90%+
+## Resources / Isolation
 
-## Architecture Notes
+Release webhook defaults to 7015; development uses 7023 on 127.0.0.1. Tests must use per-run temporary trees and no real Google Drive directory. Never send POST /sync to the everyday app during documentation checks.
 
-### Sync pipeline (three layers)
+## Operations / Release
 
-```
-sync/filelist.rs    → Generate --files-from temp file
-sync/validation.rs  → Validate paths, check destination
-sync/executor.rs    → Build rsync args, run, parse output
-sync/mod.rs         → Orchestrate: generate → validate → execute
-```
-
-### Key API paths
-
-- `commands.rs` → Tauri IPC: add_entry, remove_entry, list_entries, get_settings, update_settings, trigger_sync, scan_coding_configs, scan_coding_configs_tree
-- `webhook.rs` → HTTP: GET /status, POST /sync (both require Bearer token)
-
-### i18n system (self-built, zero dependencies)
-
-```
-src/lib/i18n.tsx       → Translation dicts (en/zh, 75+ keys), LocaleProvider, useLocale hook
-src/app/providers.tsx  → Client component wrapping ThemeProvider + LocaleProvider
-src/test/test-utils.tsx → renderWithLocale() test helper
-```
-
-- `resolveLocale("auto")` → detects via `navigator.language`, falls back to `"en"` in test env
-- Pluralization helpers: `pluralizeItems`, `pluralizeFiles`, `pluralizeDirs`, `formatSynced`, `formatAddToSyncList`, `formatInstalledCli`, `formatDialogTitle`
-- `formatHeader(result, error, t, locale)` — shared by sync-log and sync-summary
-
-### Theme system (next-themes)
-
-- `next-themes` ThemeProvider with `attribute="class"` in `providers.tsx`
-- CSS dark mode already in `globals.css`: `:root` (light) + `.dark` (dark) variable blocks
-- Tailwind v4 dark variant: `@custom-variant dark (&:is(.dark *));`
-- Settings maps `"auto"` → next-themes `"system"`
-
-### AppSettings (10 fields)
-
-When adding a field, update ALL fixtures: `types.rs` (2), `sync/mod.rs` (1), `sync_e2e.rs` (1), `webhook_e2e.rs` (2), `types.test.ts` (1), `settings-page.test.tsx` (1)
-
-## Known Issues & Gotchas
-
-- macOS ships `openrsync` (protocol 29) — `--files-from` and `-R` work correctly
-- Google Drive path contains Chinese chars — Rust handles UTF-8 fine
-- `tauri::async_runtime::spawn` must be used instead of `tokio::spawn` in Tauri setup
-- macOS openrsync in verbose mode outputs directory lines too — tests account for this
-- Port conflicts: `lsof -ti:3000 | xargs kill -9` and `rm -f .next/dev/lock` before dev
-- `next/image` with SSG requires `images: { unoptimized: true }`
-- ESLint flat config lacks `@next/next/no-img-element` rule — don't eslint-disable it
+Follow [versioning](docs/05-versioning.md). `bun run tauri build` packages the frontend export and native app only when needed; publication requires current release authorization. Use lowercase Conventional Commits, imperative subject, ≤50 characters, no final period.
 
 ## Retrospective
 
-1. **Tauri v2 window dragging requires THREE things** — Initially thought `data-tauri-drag-region` alone was enough. Dragging silently failed until we also added (1) CSS `app-region: drag` rule targeting `[data-tauri-drag-region]`, and (2) `core:window:allow-start-dragging` permission in `capabilities/default.json`. Silent failure made debugging hard — always check all three.
+Move accident narratives to [Retrospective.md](Retrospective.md); keep at most about ten concise recurring project rules here. Put architecture and operational detail in linked docs.
 
-2. **`data-tauri-drag-region` doesn't propagate to children** — Child elements (buttons, icons) inside a drag-region element don't inherit the drag behavior. Conversely, they need explicit `app-region: no-drag` CSS to remain clickable, otherwise they might trigger window drag instead of their click handlers.
-
-3. **Next.js 16 Server Components cannot have event handlers** — Attempted to add `onContextMenu` handler in `layout.tsx` (a Server Component), which caused a build error. Event handlers must go on Client Components (`"use client"`). Moved the handler to `page.tsx` instead.
-
-4. **Always verify TS test count after adding component tests** — The test count in CLAUDE.md said 31 TS tests but the actual count was 33 after toolbar drag-region tests were added. Keep the count accurate to avoid confusion.
-
-5. **Testing Library query is `getByAltText`, not `getByAlt`** — The correct RTL query for finding elements by `alt` attribute is `screen.getByAltText("...")`. `getByAlt` does not exist and throws a TypeError at runtime.
-
-6. **Radix Collapsible content is NOT in the DOM when closed** — Tests that query for child elements inside a `<CollapsiblePrimitive.Content>` will fail if the collapsible is in its default closed state. Must programmatically click the trigger button to expand before asserting on children. This affects both `getByText` and `getAllByRole("checkbox")` counts.
-
-7. **Smart folding requires marking children as added too** — When `computePathsToAdd()` folds all children into a parent directory path and `addEntry(parentPath)` succeeds, the `added` map must also mark each child path as added. Otherwise `allAdded` (which checks selectable child paths) never becomes true, and the "Done" button never appears.
-
-8. **rsync `--files-from` disables implicit recursion** — Even though `-a` includes `-r`, using `--files-from` turns off recursive directory traversal. Directory entries in the filelist are created as empty directories. Must add explicit `-r` flag (i.e. `-avrR`) to restore recursion. This is a documented rsync behavior but easy to miss since `-a` normally implies `-r`.
-
-9. **Never hardcode version strings in UI** — About page had `"v0.1.0"` hardcoded, which went stale when we released v0.1.1. The test also hardcoded the same string, so it passed despite the mismatch. Use `getVersion()` from `@tauri-apps/api/app` which reads from `tauri.conf.json` at runtime — single source of truth.
-
-10. **macOS `set_activation_policy(Accessory)` hides all windows** — Toggling dock visibility via `NSApplication.setActivationPolicy` to `Accessory` removes the dock icon but also hides all app windows as a side effect. Must explicitly call `window.show()` + `window.set_focus()` after the policy change. Additionally, switching back to `Regular` shows a generic icon — must call `NSApplication.setApplicationIconImage:` with the bundled icon to restore it. Use `objc2` crate (not deprecated `cocoa` crate).
-
-11. **Use trait abstraction to test Tauri handlers without a runtime** — Webhook handlers depended on `AppHandle` for store access, making real HTTP integration tests impossible without a full Tauri runtime. Solution: extract a `DataStore` trait with `load_settings()` / `load_items()`, make handlers generic over `S: DataStore`, and expose `build_router<S>()`. Tests use a `MockStore` impl + `tower::ServiceExt::oneshot()` to send real HTTP requests through the axum router — no TCP binding or Tauri runtime needed.
+- Preserve all three pieces of window dragging and explicit no-drag children.
+- Router oneshot calls do not establish real HTTP acceptance.
+- Keep explicit rsync recursion with file lists.
